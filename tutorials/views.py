@@ -10,14 +10,22 @@ from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
 from tutorials.forms import LogInForm, PasswordForm, UserForm, SignUpForm
 from tutorials.helpers import login_prohibited
+from django.utils import timezone
+from tutorials.models import Lesson, Invoice
+from .forms import LessonRequestForm
 
 
 @login_required
 def dashboard(request):
-    """Display the current user's dashboard."""
-
-    current_user = request.user
-    return render(request, 'dashboard.html', {'user': current_user})
+    user = request.user
+    upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now()).order_by('date')[:5]
+    unpaid_invoices = Invoice.objects.filter(student=user, paid=False)
+    context = {
+        'user': user,
+        'upcoming_lessons': upcoming_lessons,
+        'unpaid_invoices': unpaid_invoices,
+    }
+    return render(request, 'dashboard.html', context)
 
 
 @login_prohibited
@@ -26,6 +34,25 @@ def home(request):
 
     return render(request, 'home.html')
 
+
+def request_lesson(request):
+    if request.method == 'POST':
+        form = LessonRequestForm(request.POST)
+        if form.is_valid():
+            lesson = form.save(commit=False)
+            lesson.student = request.user  # Set the student to the logged-in user
+            lesson.save()
+            messages.success(request, 'Your lesson request has been submitted.')
+            return redirect('dashboard')
+    else:
+        form = LessonRequestForm()
+    return render(request, 'request_lesson.html', {'form': form})
+
+
+def view_schedule(request):
+    # Assuming a Lesson model with a foreign key to the student
+    lessons = Lesson.objects.filter(student=request.user, date__gte=timezone.now()).order_by('date')
+    return render(request, 'view_schedule.html', {'lessons': lessons})
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
@@ -151,3 +178,4 @@ class SignUpView(LoginProhibitedMixin, FormView):
 
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+    

@@ -1,0 +1,46 @@
+{% extends "base_content.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Request a Lesson</h1>
+    <p>Fill out the form below to request a new lesson. Our admin team will review your request and get back to you soon.</p>
+    
+    <form action="{% url 'request_lesson' %}" method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject" class="form-control" required>
+                <option value="">Select a subject</option>
+                <option value="Python">Python</option>
+                <option value="JavaScript">JavaScript</option>
+                <option value="Java">Java</option>
+                <option value="Web Development">Web Development</option>
+                <!-- Add more subjects as needed -->
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="preferred_date">Preferred Date</label>
+            <input type="date" id="preferred_date" name="preferred_date" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="preferred_time">Preferred Time</label>
+            <input type="time" id="preferred_time" name="preferred_time" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="duration">Lesson Duration (minutes)</label>
+            <input type="number" id="duration" name="duration" class="form-control" min="30" max="120" step="15" required>
+        </div>
+
+        <div class="form-group">
+            <label for="notes">Additional Notes</label>
+            <textarea id="notes" name="notes" class="form-control" rows="4" placeholder="Any additional information (e.g., topics to focus on)"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit Request</button>
+    </form>
+</div>
+{% endblock %}

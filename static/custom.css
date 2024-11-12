@@ -113,3 +113,61 @@ h3.profile-title {
   text-decoration: underline;
   color: #0d6efd;
 }
+
+
+/*
+ * Welcome Page
+ */
+.welcome-message h1 {
+    font-size: 2em;
+    color: #333;
+}
+.quick-links {
+    margin-top: 20px;
+}
+.quick-links .btn {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+.upcoming-lessons ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+
+/*
+ * request lessons
+ */
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 2em;
+  margin-bottom: 1em;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: #fff;
+}
+
+.table {
+  margin-top: 20px;
+}
+
+.table th, .table td {
+  text-align: center;
+}

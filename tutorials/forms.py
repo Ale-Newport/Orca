@@ -2,7 +2,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
-from .models import User
+from .models import User, Lesson
 
 class LogInForm(forms.Form):
     """Form enabling registered users to log in."""
@@ -108,3 +108,28 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
             password=self.cleaned_data.get('new_password'),
         )
         return user
+    
+class LessonRequestForm(forms.ModelForm):
+    class Meta:
+        model = Lesson
+        fields = ['subject', 'date', 'duration', 'notes']
+        widgets = {
+            'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+        labels = {
+            'date': 'Preferred Date and Time',
+        }
+        help_texts = {
+            'duration': 'Enter duration in minutes (e.g., 60 for a 1-hour lesson).',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['subject'].widget = forms.Select(choices=[
+            ('Python', 'Python'),
+            ('JavaScript', 'JavaScript'),
+            ('Java', 'Java'),
+            ('Web Development', 'Web Development'),
+            # Add other subjects here
+        ])
+        self.fields['notes'].widget = forms.Textarea(attrs={'rows': 3, 'placeholder': 'Any additional details'})

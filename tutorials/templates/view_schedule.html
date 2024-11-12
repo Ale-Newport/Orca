@@ -1,0 +1,35 @@
+{% extends "base_content.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>My Schedule</h1>
+    <p>Here is a list of your upcoming lessons.</p>
+
+    {% if lessons %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Duration</th>
+                    <th>Tutor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lesson in lessons %}
+                    <tr>
+                        <td>{{ lesson.subject }}</td>
+                        <td>{{ lesson.date|date:"D, d M Y" }}</td>
+                        <td>{{ lesson.date|time:"H:i" }}</td>
+                        <td>{{ lesson.duration }} minutes</td>
+                        <td>{{ lesson.tutor.full_name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>You currently have no scheduled lessons. <a href="{% url 'request_lesson' %}">Request a lesson</a> to get started!</p>
+    {% endif %}
+</div>
+{% endblock %}

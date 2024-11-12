@@ -2,6 +2,8 @@ from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from libgravatar import Gravatar
+from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class User(AbstractUser):
     """Model used for user authentication, and team member related information."""
@@ -40,3 +42,27 @@ class User(AbstractUser):
         """Return a URL to a miniature version of the user's gravatar."""
         
         return self.gravatar(size=60)
+
+class Lesson(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    subject = models.CharField(max_length=100)
+    date = models.DateTimeField()
+    duration = models.PositiveIntegerField(help_text="Duration in minutes")
+    notes = models.TextField(blank=True, null=True)  # Add the 'notes' field here
+
+    def __str__(self):
+        return f"{self.subject} with {self.student.full_name()} on {self.date}"
+
+
+class Invoice(models.Model):
+    """Model representing an invoice for lessons."""
+
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='invoices')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    issued_date = models.DateField(auto_now_add=True)
+    due_date = models.DateField()
+    paid = models.BooleanField(default=False)
+
+    def __str__(self):
+        status = "Paid" if self.paid else "Unpaid"
+        return f"Invoice for {self.student.full_name()} - {status}"

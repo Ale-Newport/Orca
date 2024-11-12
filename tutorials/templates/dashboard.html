@@ -1,10 +1,37 @@
 {% extends 'base_content.html' %}
 {% block content %}
-<div class="container">
-  <div class="row">
-    <div class="col-12">
-      <h1>Welcome to your dashboard {{ user.username }}</h1>
-    </div>
-  </div>
+<div class="welcome-message">
+  <h1>Welcome, {{ user.first_name }}!</h1>
+  <p>{{ user.username }}</p>
 </div>
+
+<div class="quick-links">
+  <h2>Quick Links</h2>
+  <a href="{% url 'request_lesson' %}" class="btn">Request a Lesson</a>
+  <a href="{% url 'view_schedule' %}" class="btn">View My Schedule</a>
+  <a href="{% url 'profile' %}" class="btn">Update Profile</a>
+</div>
+
+<div class="upcoming-lessons">
+  <h2>Upcoming Lessons</h2>
+  {% if upcoming_lessons %}
+      <ul>
+          {% for lesson in upcoming_lessons %}
+              <li>{{ lesson.date }} with {{ lesson.tutor.name }} - {{ lesson.subject }}</li>
+          {% endfor %}
+      </ul>
+  {% else %}
+      <p>No upcoming lessons. <a href="{% url 'request_lesson' %}">Request a lesson</a></p>
+  {% endif %}
+</div>
+
+<div class="notifications">
+  <h2>Notifications</h2>
+  {% if unpaid_invoices %}
+      <p>You have unpaid invoices. Please check <a href="{% url 'invoices' %}">your invoices</a>.</p>
+  {% else %}
+      <p>All invoices are up to date.</p>
+  {% endif %}
+</div>
+
 {% endblock %}
