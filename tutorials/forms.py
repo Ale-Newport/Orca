@@ -130,6 +130,9 @@ class LessonRequestForm(forms.ModelForm):
             ('JavaScript', 'JavaScript'),
             ('Java', 'Java'),
             ('Web Development', 'Web Development'),
+            ('SQL', 'SQL'),
+            ('Scala', 'Scala'),
+            ('C++', 'C++'),
             # Add other subjects here
         ])
         self.fields['notes'].widget = forms.Textarea(attrs={'rows': 3, 'placeholder': 'Any additional details'})

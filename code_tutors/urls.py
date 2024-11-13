@@ -31,5 +31,6 @@ urlpatterns = [
     path('sign_up/', views.SignUpView.as_view(), name='sign_up'),
     path('request_lesson/', views.request_lesson, name='request_lesson'),
     path('view_schedule/', views.view_schedule, name='view_schedule'),
+    path('invoices/', views.invoices, name='invoices'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,13 +1,50 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-3">
-  <div class="container">
+<nav class="navbar navbar-expand-xl navbar-dark bg-dark">
+  <div class="container-fluid">
+    <!-- Brand Logo -->
     <a class="navbar-brand" href="{% url 'dashboard' %}">
-      Task Manager
+      <i class="fas fa-tasks"></i> Task Manager
     </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+
+    <!-- Toggler for Mobile -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    {% if user.is_authenticated %}
-      {% include 'partials/menu.html' %}
-    {% endif %}
+
+    <!-- Navbar Links -->
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav ms-auto">
+        {% if user.is_authenticated %}
+          <!-- Main Links -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_schedule' %}"><i class="fas fa-calendar-alt"></i> Schedule</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'request_lesson' %}"><i class="fas fa-book-open"></i> Request Lesson</a>
+          </li>
+
+          <!-- User Dropdown Menu -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-user-circle"></i> {{ user.first_name }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user"></i> Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'invoices' %}"><i class="fas fa-file-invoice-dollar"></i> Invoices</a></li>
+              <li><a class="dropdown-item" href="{% url 'password' %}"><i class="fas fa-cog"></i> Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="{% url 'log_out' %}"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+            </ul>
+          </li>
+        {% else %}
+          <!-- Links for Unauthenticated Users -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'sign_up' %}"><i class="fas fa-user-plus"></i> Sign Up</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'log_in' %}"><i class="fas fa-sign-in-alt"></i> Log In</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
   </div>
 </nav>

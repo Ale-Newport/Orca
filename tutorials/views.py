@@ -34,7 +34,7 @@ def home(request):
 
     return render(request, 'home.html')
 
-
+@login_required
 def request_lesson(request):
     if request.method == 'POST':
         form = LessonRequestForm(request.POST)
@@ -48,11 +48,17 @@ def request_lesson(request):
         form = LessonRequestForm()
     return render(request, 'request_lesson.html', {'form': form})
 
-
+@login_required
 def view_schedule(request):
     # Assuming a Lesson model with a foreign key to the student
     lessons = Lesson.objects.filter(student=request.user, date__gte=timezone.now()).order_by('date')
     return render(request, 'view_schedule.html', {'lessons': lessons})
+
+@login_required
+def invoices(request):
+    user_invoices = Invoice.objects.filter(student=request.user).order_by('-issued_date')
+    return render(request, 'invoices.html', {'invoices': user_invoices})
+
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""

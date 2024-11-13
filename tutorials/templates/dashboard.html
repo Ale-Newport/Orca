@@ -1,37 +1,84 @@
 {% extends 'base_content.html' %}
+
 {% block content %}
-<div class="welcome-message">
-  <h1>Welcome, {{ user.first_name }}!</h1>
-  <p>{{ user.username }}</p>
-</div>
+<div class="container mt-5">
+    <!-- Welcome Section -->
+    <div class="welcome-section text-center mb-5">
+        <h1 class="display-4">Welcome, {{ user.first_name }}!</h1>
+        <p class="lead">Your personalized dashboard to keep track of lessons, schedules, and important notifications.</p>
+    </div>
 
-<div class="quick-links">
-  <h2>Quick Links</h2>
-  <a href="{% url 'request_lesson' %}" class="btn">Request a Lesson</a>
-  <a href="{% url 'view_schedule' %}" class="btn">View My Schedule</a>
-  <a href="{% url 'profile' %}" class="btn">Update Profile</a>
-</div>
+    <!-- Quick Links Section -->
+    <div class="quick-links-section row mb-5">
+        <h2 class="col-12 text-center mb-4">Quick Links</h2>
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-book-open fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Request a Lesson</h5>
+                    <p class="card-text">Schedule a new lesson with one of our expert tutors.</p>
+                    <a href="{% url 'request_lesson' %}" class="btn btn-primary">Request a Lesson</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">View My Schedule</h5>
+                    <p class="card-text">Keep track of your upcoming lessons and commitments.</p>
+                    <a href="{% url 'view_schedule' %}" class="btn btn-primary">View My Schedule</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-invoice-dollar fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Invoices</h5>
+                    <p class="card-text">Check your outstanding invoices and payment history.</p>
+                    <a href="{% url 'invoices' %}" class="btn btn-primary">View Invoices</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="upcoming-lessons">
-  <h2>Upcoming Lessons</h2>
-  {% if upcoming_lessons %}
-      <ul>
-          {% for lesson in upcoming_lessons %}
-              <li>{{ lesson.date }} with {{ lesson.tutor.name }} - {{ lesson.subject }}</li>
-          {% endfor %}
-      </ul>
-  {% else %}
-      <p>No upcoming lessons. <a href="{% url 'request_lesson' %}">Request a lesson</a></p>
-  {% endif %}
-</div>
+    <!-- Upcoming Lessons Section -->
+    <div class="upcoming-lessons-section mb-5">
+        <h2 class="text-center mb-4">Upcoming Lessons</h2>
+        {% if upcoming_lessons %}
+            <div class="card shadow-sm border-info">
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for lesson in upcoming_lessons %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5>{{ lesson.subject }}</h5>
+                                    <p>{{ lesson.date|date:"D, d M Y H:i" }} with {{ lesson.tutor.full_name }}</p>
+                                </div>
+                                <span class="badge badge-primary badge-pill">{{ lesson.duration }} mins</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% else %}
+            <p class="text-center">No upcoming lessons. <a href="{% url 'request_lesson' %}">Request a lesson</a> to get started!</p>
+        {% endif %}
+    </div>
 
-<div class="notifications">
-  <h2>Notifications</h2>
-  {% if unpaid_invoices %}
-      <p>You have unpaid invoices. Please check <a href="{% url 'invoices' %}">your invoices</a>.</p>
-  {% else %}
-      <p>All invoices are up to date.</p>
-  {% endif %}
+    <!-- Notifications Section -->
+    <div class="notifications-section mb-5">
+        <h2 class="text-center mb-4">Notifications</h2>
+        <div class="card shadow-sm border-warning">
+            <div class="card-body text-center">
+                {% if unpaid_invoices %}
+                    <p>You have unpaid invoices. Please check <a href="{% url 'invoices' %}">your invoices</a>.</p>
+                {% else %}
+                    <p>All invoices are up to date. No pending payments!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
-
 {% endblock %}
