@@ -64,3 +64,5 @@ class Invoice(models.Model):
     def __str__(self):
         status = "Paid" if self.paid else "Unpaid"
         return f"Invoice {self.id} for {self.student} - {status}"
+
+

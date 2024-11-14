@@ -32,5 +32,6 @@ urlpatterns = [
     path('request_lesson/', views.request_lesson, name='request_lesson'),
     path('view_schedule/', views.view_schedule, name='view_schedule'),
     path('invoices/', views.invoices, name='invoices'),
+    path('lesson_requests/', views.requestsView, name="requests")
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
