@@ -44,15 +44,18 @@ class User(AbstractUser):
         return self.gravatar(size=60)
 
 class Lesson(models.Model):
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="lessons"
+    )
     subject = models.CharField(max_length=100)
     date = models.DateTimeField()
     duration = models.PositiveIntegerField(help_text="Duration in minutes")
-    notes = models.TextField(blank=True, null=True)  # Add the 'notes' field here
+    tutor = models.CharField(max_length=100, default="Unknown Tutor")
 
     def __str__(self):
-        return f"{self.subject} with {self.student.full_name()} on {self.date}"
-
+        return f"{self.subject} with {self.student.username} on {self.date}"
 
 class Invoice(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='invoices')

@@ -23,7 +23,7 @@
                         <td>{{ lesson.date|date:"D, d M Y" }}</td>
                         <td>{{ lesson.date|time:"H:i" }}</td>
                         <td>{{ lesson.duration }} minutes</td>
-                        <td>{{ lesson.tutor.full_name }}</td>
+                        <td>{{ lesson.tutor }}</td> <!-- Use the tutor field directly -->
                     </tr>
                 {% endfor %}
             </tbody>

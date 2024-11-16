@@ -112,7 +112,7 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
 class LessonRequestForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ['subject', 'date', 'duration', 'notes']
+        fields = ['subject', 'date', 'duration']  # Removed 'notes'
         widgets = {
             'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
@@ -135,4 +135,3 @@ class LessonRequestForm(forms.ModelForm):
             ('C++', 'C++'),
             # Add other subjects here
         ])
-        self.fields['notes'].widget = forms.Textarea(attrs={'rows': 3, 'placeholder': 'Any additional details'})

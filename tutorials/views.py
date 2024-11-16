@@ -11,6 +11,7 @@ from django.urls import reverse
 from tutorials.forms import LogInForm, PasswordForm, UserForm, SignUpForm
 from tutorials.helpers import login_prohibited
 from django.utils import timezone
+from django.utils.timezone import now
 from tutorials.models import Lesson, Invoice
 from .forms import LessonRequestForm
 from django.contrib.auth.decorators import user_passes_test
@@ -50,8 +51,7 @@ def request_lesson(request):
 
 @login_required
 def view_schedule(request):
-    # Assuming a Lesson model with a foreign key to the student
-    lessons = Lesson.objects.filter(student=request.user, date__gte=timezone.now()).order_by('date')
+    lessons = Lesson.objects.filter(student=request.user, date__gte=now()).order_by('date')
     return render(request, 'view_schedule.html', {'lessons': lessons})
 
 @login_required
