@@ -15,6 +15,10 @@ from django.utils.timezone import now
 from tutorials.models import Lesson, Invoice
 from .forms import LessonRequestForm
 from django.contrib.auth.decorators import user_passes_test
+from calendar import monthrange
+from datetime import datetime, timedelta
+from decimal import Decimal
+from datetime import timedelta
 
 @login_required
 def dashboard(request):
@@ -43,17 +47,60 @@ def request_lesson(request):
             lesson = form.save(commit=False)
             lesson.student = request.user  # Set the student to the logged-in user
             lesson.save()
-            messages.success(request, 'Your lesson request has been submitted.')
+
+            # Generate Invoice for the lesson
+            amount = Decimal(lesson.duration * 10)  # Example: $10 per minute
+            due_date = lesson.date.date() + timedelta(days=7)  # Due in 7 days
+            Invoice.objects.create(
+                student=request.user,
+                amount=amount,
+                due_date=due_date
+            )
+
+            messages.success(request, 'Your lesson request has been submitted, and an invoice has been generated.')
             return redirect('dashboard')
     else:
         form = LessonRequestForm()
     return render(request, 'request_lesson.html', {'form': form})
 
 @login_required
-def view_schedule(request):
-    lessons = Lesson.objects.filter(student=request.user, date__gte=now()).order_by('date')
-    return render(request, 'view_schedule.html', {'lessons': lessons})
+def view_schedule(request, year=None, month=None):
+    user = request.user
+    # Use current year and month if not provided
+    today = datetime.today()
+    year = year or today.year
+    month = month or today.month
 
+    # Get lessons for the given month
+    lessons = Lesson.objects.filter(
+        student=user,
+        date__year=year,
+        date__month=month
+    )
+
+    # Generate calendar structure
+    days_in_month = monthrange(year, month)[1]
+    calendar = [
+        {
+            "day": day,
+            "lessons": [
+                lesson for lesson in lessons if lesson.date.day == day
+            ]
+        }
+        for day in range(1, days_in_month + 1)
+    ]
+
+    # Context data
+    context = {
+        "calendar": calendar,
+        "month": month,
+        "year": year,
+        "prev_month": (month - 1) if month > 1 else 12,
+        "prev_year": year if month > 1 else year - 1,
+        "next_month": (month + 1) if month < 12 else 1,
+        "next_year": year if month < 12 else year + 1,
+    }
+    return render(request, 'view_schedule.html', context)
 @login_required
 def invoices(request):
     user_invoices = Invoice.objects.filter(student=request.user).order_by('-issued_date')

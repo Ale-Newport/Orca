@@ -4,6 +4,10 @@ from django.db import models
 from libgravatar import Gravatar
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils.timezone import now
+from datetime import timedelta
+from decimal import Decimal
+
 
 class User(AbstractUser):
     """Model used for user authentication, and team member related information."""
@@ -56,6 +60,20 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.subject} with {self.student.username} on {self.date}"
+
+    def save(self, *args, **kwargs):
+        """Override the save method to create an invoice when a lesson is added."""
+        creating = self.pk is None  # Check if this is a new lesson
+        super().save(*args, **kwargs)
+
+        if creating:  # If it's a new lesson, create an invoice
+            amount = Decimal(self.duration * 10)  # Example: $10 per minute
+            due_date = self.date.date() + timedelta(days=7)  # Due in 7 days
+            Invoice.objects.create(
+                student=self.student,
+                amount=amount,
+                due_date=due_date
+            )
 
 class Invoice(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='invoices')

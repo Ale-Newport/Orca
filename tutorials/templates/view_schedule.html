@@ -1,35 +1,39 @@
 {% extends "base_content.html" %}
-
 {% block content %}
 <div class="container">
-    <h1>My Schedule</h1>
-    <p>Here is a list of your upcoming lessons.</p>
+    <h1 class="text-center">Schedule for {{ month }}/{{ year }}</h1>
 
-    {% if lessons %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Subject</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Duration</th>
-                    <th>Tutor</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for lesson in lessons %}
-                    <tr>
-                        <td>{{ lesson.subject }}</td>
-                        <td>{{ lesson.date|date:"D, d M Y" }}</td>
-                        <td>{{ lesson.date|time:"H:i" }}</td>
-                        <td>{{ lesson.duration }} minutes</td>
-                        <td>{{ lesson.tutor }}</td> <!-- Use the tutor field directly -->
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>You currently have no scheduled lessons. <a href="{% url 'request_lesson' %}">Request a lesson</a> to get started!</p>
-    {% endif %}
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{% url 'view_schedule' prev_year prev_month %}" class="btn btn-primary">Previous Month</a>
+        <a href="{% url 'view_schedule' next_year next_month %}" class="btn btn-primary">Next Month</a>
+    </div>
+
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Lessons</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in calendar %}
+            <tr>
+                <td>{{ day.day }}</td>
+                <td>
+                    {% for lesson in day.lessons %}
+                        <div class="lesson">
+                            <strong>{{ lesson.subject }}</strong><br>
+                            Tutor: {{ lesson.tutor }}<br>
+                            Time: {{ lesson.date|time:"H:i" }}<br>
+                        </div>
+                        <hr>
+                    {% empty %}
+                    No lessons
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
