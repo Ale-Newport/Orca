@@ -1,6 +1,6 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
-from tutorials.views import LoginProhibitedMixin
+from tutorials.views.views import LoginProhibitedMixin
 
 class LoginProhibitedMixinTestCase(TestCase):
 	def test_login_prohibited_throws_exception_when_not_configured(self):

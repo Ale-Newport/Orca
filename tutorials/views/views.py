@@ -12,7 +12,7 @@ from tutorials.forms import LogInForm, PasswordForm, UserForm, SignUpForm
 from tutorials.helpers import login_prohibited
 from django.utils import timezone
 from tutorials.models import Lesson, Invoice
-from .forms import LessonRequestForm
+from ..forms import LessonRequestForm
 from django.contrib.auth.decorators import user_passes_test
 from calendar import monthrange
 from datetime import datetime, timedelta
@@ -37,29 +37,6 @@ def home(request):
 
     return render(request, 'home.html')
 
-@login_required
-def request_lesson(request):
-    if request.method == 'POST':
-        form = LessonRequestForm(request.POST)
-        if form.is_valid():
-            lesson = form.save(commit=False)
-            lesson.student = request.user  # Set the student to the logged-in user
-            lesson.save()
-
-            # Generate Invoice for the lesson
-            amount = Decimal(lesson.duration * 10)  # Example: $10 per minute
-            due_date = lesson.date.date() + timedelta(days=7)  # Due in 7 days
-            Invoice.objects.create(
-                student=request.user,
-                amount=amount,
-                due_date=due_date
-            )
-
-            messages.success(request, 'Your lesson request has been submitted, and an invoice has been generated.')
-            return redirect('dashboard')
-    else:
-        form = LessonRequestForm()
-    return render(request, 'request_lesson.html', {'form': form})
 
 @login_required
 def view_schedule(request, year=None, month=None):
@@ -99,6 +76,7 @@ def view_schedule(request, year=None, month=None):
         "next_year": year if month < 12 else year + 1,
     }
     return render(request, 'view_schedule.html', context)
+
 @login_required
 def invoices(request):
     user_invoices = Invoice.objects.filter(student=request.user).order_by('-issued_date')

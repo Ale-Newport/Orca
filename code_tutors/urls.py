@@ -18,7 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
-from tutorials import views
+from tutorials.views import views, managment_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,12 +29,15 @@ urlpatterns = [
     path('password/', views.PasswordView.as_view(), name='password'),
     path('profile/', views.ProfileUpdateView.as_view(), name='profile'),
     path('sign_up/', views.SignUpView.as_view(), name='sign_up'),
-    path('request_lesson/', views.request_lesson, name='request_lesson'),
+    path('request_lesson/', managment_views.request_lesson, name='request_lesson'),
     path('view_schedule/', views.view_schedule, name='view_schedule'),
     path('invoices/', views.invoices, name='invoices'),
     path('lesson_requests/', views.requestsView, name="requests"),
     path('view_schedule/', views.view_schedule, name='view_schedule'),
-    path('view_schedule/<int:year>/<int:month>/', views.view_schedule, name='view_schedule')
+    path('view_schedule/<int:year>/<int:month>/', views.view_schedule, name='view_schedule'),
+    path('upcoming_lessons/', managment_views.view_upcoming_lessons, name='view_upcoming_lessons'),
+    path('update_lesson/<int:pk>/', managment_views.update_lesson, name='update_lesson'),
+    path('remove_lesson/<int:pk>/', managment_views.remove_lesson, name='remove_lesson'),
 
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

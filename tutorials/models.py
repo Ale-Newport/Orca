@@ -48,42 +48,42 @@ class User(AbstractUser):
         return self.gravatar(size=60)
 
 class Lesson(models.Model):
-    student = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="lessons"
-    )
-    subject = models.CharField(max_length=100)
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
+
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lessons")
+    subject = models.CharField(max_length=100, choices=[
+        ('Python', 'Python'),
+        ('Java', 'Java'),
+        ('C++', 'C++'),
+        ('Scala', 'Scala'),
+        ('Web Development', 'Web Development'),
+    ])
     date = models.DateTimeField()
-    duration = models.PositiveIntegerField(help_text="Duration in minutes")
+    duration = models.PositiveIntegerField(validators=[MinValueValidator(30), MaxValueValidator(120)])
     tutor = models.CharField(max_length=100, default="Unknown Tutor")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+
+    def is_assigned(self):
+        """Return True if a tutor has been assigned."""
+        return self.tutor != "Unknown Tutor"
+
+    is_assigned.boolean = True  # Show as a boolean field in the admin interface
+    is_assigned.short_description = 'Assigned?'
 
     def __str__(self):
         return f"{self.subject} with {self.student.username} on {self.date}"
-
-    def save(self, *args, **kwargs):
-        """Override the save method to create an invoice when a lesson is added."""
-        creating = self.pk is None  # Check if this is a new lesson
-        super().save(*args, **kwargs)
-
-        if creating:  # If it's a new lesson, create an invoice
-            amount = Decimal(self.duration * 10)  # Example: $10 per minute
-            due_date = self.date.date() + timedelta(days=7)  # Due in 7 days
-            Invoice.objects.create(
-                student=self.student,
-                amount=amount,
-                due_date=due_date
-            )
-
+    
+    
 class Invoice(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='invoices')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     issued_date = models.DateField(auto_now_add=True)
     due_date = models.DateField()
     paid = models.BooleanField(default=False)
-
     def __str__(self):
         status = "Paid" if self.paid else "Unpaid"
         return f"Invoice {self.id} for {self.student} - {status}"
-
-

@@ -112,26 +112,18 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
 class LessonRequestForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ['subject', 'date', 'duration']  # Removed 'notes'
+        fields = ['subject', 'duration']
         widgets = {
             'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        }
-        labels = {
-            'date': 'Preferred Date and Time',
-        }
-        help_texts = {
-            'duration': 'Enter duration in minutes (e.g., 60 for a 1-hour lesson).',
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['subject'].widget = forms.Select(choices=[
-            ('Python', 'Python'),
-            ('JavaScript', 'JavaScript'),
-            ('Java', 'Java'),
-            ('Web Development', 'Web Development'),
-            ('SQL', 'SQL'),
-            ('Scala', 'Scala'),
-            ('C++', 'C++'),
-            # Add other subjects here
-        ])
+        self.fields['subject'].choices = Lesson._meta.get_field('subject').choices
+
+    # Override the form's `date` field to set specific input formats
+    date = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        input_formats=['%Y-%m-%dT%H:%M']
+    )
+
