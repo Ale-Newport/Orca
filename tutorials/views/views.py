@@ -218,3 +218,16 @@ def specific_user_only(user):
 @user_passes_test(specific_user_only, login_url='/log_in/')  # Redirect others to login
 def requestsView(request):
     return render(request, 'lesson_requests.html')
+
+# check user type while login in to different dashboard
+@login_required
+def student_dashboard(request):
+    if not request.user.is_student():
+        return redirect('tutor_dashboard')  # Restrict to students
+    return render(request, 'dashboard.html')
+
+@login_required
+def tutor_dashboard(request):
+    if not request.user.is_tutor():
+        return redirect('student_dashboard')  # Restrict to tutors
+    return render(request, 'tutor_dashboard.html')
