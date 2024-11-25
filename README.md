@@ -8,6 +8,9 @@ The members of the team are:
 - *Alejandro Newport Diaz*
 - *Eduardo Sanchez Morales*
 
+
+//test
+
 ## Project structure
 The project is called `task_manager`.  It currently consists of a single app `tasks`.
 
