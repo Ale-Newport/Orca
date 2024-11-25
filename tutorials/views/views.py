@@ -13,7 +13,6 @@ from tutorials.helpers import login_prohibited
 from django.utils import timezone
 from tutorials.models import Lesson, Invoice
 from ..forms import LessonRequestForm
-from django.contrib.auth.decorators import user_passes_test
 from calendar import monthrange
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -257,3 +256,4 @@ def request_lesson(request):
     else:
         form = LessonRequestForm()
     return render(request, 'request_lesson.html', {'form': form})
+    
