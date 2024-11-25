@@ -17,6 +17,11 @@ from django.contrib.auth.decorators import user_passes_test
 from calendar import monthrange
 from datetime import datetime, timedelta
 from decimal import Decimal
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from datetime import datetime
+
 
 @login_required
 def dashboard(request):
@@ -231,3 +236,24 @@ def tutor_dashboard(request):
     if not request.user.is_tutor():
         return redirect('student_dashboard')  # Restrict to tutors
     return render(request, 'tutor_dashboard.html')
+
+
+@login_required
+def request_lesson(request):
+    if request.method == 'POST':
+        form = LessonRequestForm(request.POST)
+        if form.is_valid():
+            lesson = form.save(commit=False)
+            lesson.status = 'Pending'
+            lesson.student = request.user
+            lesson.date = form.cleaned_data['date']
+            lesson.save()
+            # Generate Invoice if needed
+            # generate_invoice_for_lesson(lesson)
+            messages.success(request, 'Your lesson request has been submitted and is currently pending approval.')
+            return redirect('view_upcoming_lessons')
+        else:
+            messages.error(request, 'There was an error with your submission. Please check the form for details.')
+    else:
+        form = LessonRequestForm()
+    return render(request, 'request_lesson.html', {'form': form})

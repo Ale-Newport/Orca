@@ -3,6 +3,8 @@ from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
 from .models import User, Lesson
+from django import forms
+from datetime import datetime
 
 class LogInForm(forms.Form):
     """Form enabling registered users to log in."""
@@ -110,20 +112,30 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
         return user
     
 class LessonRequestForm(forms.ModelForm):
-    class Meta:
-        model = Lesson
-        fields = ['subject', 'duration']
-        widgets = {
-            'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['subject'].choices = Lesson._meta.get_field('subject').choices
-
-    # Override the form's `date` field to set specific input formats
-    date = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        input_formats=['%Y-%m-%dT%H:%M']
+    preferred_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        required=True
+    )
+    preferred_time = forms.TimeField(
+        widget=forms.TimeInput(attrs={'type': 'time'}),
+        required=True
+    )
+    notes = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 4}),
+        required=False
     )
 
+    class Meta:
+        model = Lesson
+        fields = ['subject', 'duration', 'preferred_date', 'preferred_time', 'notes']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        preferred_date = cleaned_data.get('preferred_date')
+        preferred_time = cleaned_data.get('preferred_time')
+        if preferred_date and preferred_time:
+            combined_datetime = datetime.combine(preferred_date, preferred_time)
+            cleaned_data['date'] = combined_datetime
+        else:
+            raise forms.ValidationError('Please enter both date and time.')
+        return cleaned_data

@@ -1,3 +1,5 @@
+<!-- request_lesson.html -->
+
 {% extends "base_content.html" %}
 
 {% block content %}
@@ -7,37 +9,36 @@
     
     <form action="{% url 'request_lesson' %}" method="post">
         {% csrf_token %}
-        
+        {{ form.non_field_errors }}
+
         <div class="form-group">
-            <label for="subject">Subject</label>
-            <select id="subject" name="subject" class="form-control" required>
-                <option value="">Select a subject</option>
-                <option value="Python">Python</option>
-                <option value="Java">Java</option>
-                <option value="C++">C++</option>
-                <option value="Scala">Scala</option>
-                <option value="Web Development">Web Development</option>
-            </select>            
+            {{ form.subject.label_tag }}
+            {{ form.subject }}
+            {{ form.subject.errors }}
         </div>
 
         <div class="form-group">
-            <label for="preferred_date">Preferred Date</label>
-            <input type="date" id="preferred_date" name="preferred_date" class="form-control" required>
+            {{ form.preferred_date.label_tag }}
+            {{ form.preferred_date }}
+            {{ form.preferred_date.errors }}
         </div>
 
         <div class="form-group">
-            <label for="preferred_time">Preferred Time</label>
-            <input type="time" id="preferred_time" name="preferred_time" class="form-control" required>
+            {{ form.preferred_time.label_tag }}
+            {{ form.preferred_time }}
+            {{ form.preferred_time.errors }}
         </div>
 
         <div class="form-group">
-            <label for="duration">Lesson Duration (minutes)</label>
-            <input type="number" id="duration" name="duration" class="form-control" min="30" max="120" step="15" required>
+            {{ form.duration.label_tag }}
+            {{ form.duration }}
+            {{ form.duration.errors }}
         </div>
 
         <div class="form-group">
-            <label for="notes">Additional Notes</label>
-            <textarea id="notes" name="notes" class="form-control" rows="4" placeholder="Any additional information (e.g., topics to focus on)"></textarea>
+            {{ form.notes.label_tag }}
+            {{ form.notes }}
+            {{ form.notes.errors }}
         </div>
 
         <button type="submit" class="btn btn-primary">Submit Request</button>

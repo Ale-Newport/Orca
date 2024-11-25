@@ -66,6 +66,7 @@ class Lesson(models.Model):
     duration = models.PositiveIntegerField(validators=[MinValueValidator(30), MaxValueValidator(120)])
     tutor = models.CharField(max_length=100, default="Unknown Tutor")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    notes = models.TextField(blank=True, null=True)
 
     def is_assigned(self):
         """Return True if a tutor has been assigned."""

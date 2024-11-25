@@ -1,16 +1,14 @@
 from django.contrib import admin
 from .models import User, Lesson, Invoice
-
 from django.contrib import admin
-from .models import User, Lesson, Invoice
+from .models import Lesson
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('student', 'subject', 'date', 'duration', 'tutor', 'status', 'is_assigned')  # Combined fields from both versions
-    list_filter = ('status', 'subject', 'date', 'tutor')  # Combined filters from both versions
-    search_fields = ('student__username', 'subject', 'tutor')  # Search fields from the first version
-    ordering = ('-date',)  # Ordering from the first version
-    date_hierarchy = 'date'  # Date hierarchy from the first version
+    list_display = ('student', 'subject', 'date', 'duration', 'tutor', 'status', 'is_assigned')
+    list_filter = ('status', 'subject', 'date', 'tutor')
+    search_fields = ('student__username', 'subject', 'tutor')
+    ordering = ('-date',)
     actions = ['approve_lessons', 'reject_lessons']
 
     @admin.action(description='Approve selected lessons')
