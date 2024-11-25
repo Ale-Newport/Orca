@@ -215,4 +215,5 @@ class SignUpView(LoginProhibitedMixin, FormView):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
     
 def lesson_requests(request):
-    return render(request, 'lesson_requests.html')
+    lessons = Lesson.objects.filter(status='Pending').order_by('date')
+    return render(request, 'lesson_requests.html', {'lessons': lessons})

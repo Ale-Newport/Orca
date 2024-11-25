@@ -1,37 +1,29 @@
 {% extends 'base_content.html' %}
 {% block content %}
-        <h1>
-            Lesson Requests
-        </h1>
-        <table class="table">
+    <h1>Lesson Requests</h1>
+    <table class="table">
         <thead>
-        <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Student Name</th>
-            <th scope="col">Class</th>
-            <th scope="col">Time</th>
-            <th scope="col">Tutor</th>
-        </tr>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Student Name</th>
+                <th scope="col">Subject</th>
+                <th scope="col">Date</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Status</th>
+                <th scope="col">Assigned Tutor</th>
+            </tr>
         </thead>
         <tbody>
-        <tr>
-            <th scope="row">1</th>
-            <td>Test</td>
-            <td>Test</td>
-            <td>Test</td>
-        </tr>
-        <tr>x
-            <th scope="row">2</th>
-            <td>Test</td>
-            <td>Test</td>
-            <td>Test</td>
-        </tr>
-        <tr>
-            <th scope="row">3</th>
-            <td>Test</td>
-            <td>Test</td>
-            <td>Test</td>
-        </tr>
+            {% for lesson in lessons %}
+            <tr>
+                <th scope="row">{{ lesson.id }}</th>
+                <td>{{ lesson.student.full_name }}</td>
+                <td>{{ lesson.subject }}</td>
+                <td>{{ lesson.date }}</td>
+                <td>{{ lesson.duration }} minutes</td>
+                <td>{{ lesson.status }}</td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 {% endblock %}
