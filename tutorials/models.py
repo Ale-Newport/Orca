@@ -23,6 +23,7 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=50, blank=False)
     last_name = models.CharField(max_length=50, blank=False)
     email = models.EmailField(unique=True, blank=False)
+    is_tutor = models.BooleanField()
 
 
     class Meta:

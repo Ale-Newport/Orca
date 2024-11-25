@@ -45,9 +45,7 @@
 
    <!-- Upcoming Lessons Section -->
     <div class="upcoming-lessons-section mb-5">
-        <h2 class="text-center mb-4">
-            <a href="{% url 'view_upcoming_lessons' %}">Upcoming Lessons</a>
-        </h2>
+        
         {% if upcoming_lessons %}
             <div class="card shadow-sm border-info">
                 <div class="card-body">
@@ -67,6 +65,11 @@
         {% else %}
             <p class="text-center">No upcoming lessons. <a href="{% url 'request_lesson' %}">Request a lesson</a> to get started!</p>
         {% endif %}
+        <div class="text-center">
+            <a href="{% url 'view_upcoming_lessons' %}">
+                <button type="button" class="btn btn-primary btn-sm">Upcoming Lessons</button>
+            </a>
+        </div>
     </div>
 
 

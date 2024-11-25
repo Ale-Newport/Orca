@@ -4,11 +4,15 @@
   <div class="row">
     <div class="col-12">
       <h1>Sign up</h1>
-      <form action="{% url 'sign_up' %}" method="post">
+
+      <div class="form-group">
+        <form action="{% url 'sign_up' %}" method="post">
         {% csrf_token %}
-        {% include 'partials/bootstrap_form.html' with form=form %}
+        {{form}}
+
         <input type="submit" value="Sign up" class="btn btn-primary">
       </form>
+      </div>
     </div>
   </div>
 </div>

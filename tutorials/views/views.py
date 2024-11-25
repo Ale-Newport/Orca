@@ -13,7 +13,6 @@ from tutorials.helpers import login_prohibited
 from django.utils import timezone
 from tutorials.models import Lesson, Invoice
 from ..forms import LessonRequestForm
-from django.contrib.auth.decorators import user_passes_test
 from calendar import monthrange
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -210,11 +209,3 @@ class SignUpView(LoginProhibitedMixin, FormView):
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
     
-# Custom decorator to check if the user has the username "administrator"
-def specific_user_only(user):
-    return user.username == "@administrator"
-
-# View for the specific user page
-@user_passes_test(specific_user_only, login_url='/log_in/')  # Redirect others to login
-def requestsView(request):
-    return render(request, 'lesson_requests.html')

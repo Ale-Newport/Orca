@@ -90,11 +90,26 @@ class PasswordForm(NewPasswordMixin):
 class SignUpForm(NewPasswordMixin, forms.ModelForm):
     """Form enabling unregistered users to sign up."""
 
+    is_tutor = forms.BooleanField(
+        label="I am registering as a tutor",
+        required=False
+    )
+
     class Meta:
         """Form options."""
 
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
+
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.TextInput(attrs={'class': 'form-control'}),
+            'password': forms.TextInput(attrs={'class': 'form-control'}),
+
+
+        }
 
     def save(self):
         """Create a new user."""
@@ -106,6 +121,8 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
             last_name=self.cleaned_data.get('last_name'),
             email=self.cleaned_data.get('email'),
             password=self.cleaned_data.get('new_password'),
+            is_tutor=self.cleaned_data.get('is_tutor'),
+   
         )
         return user
     
