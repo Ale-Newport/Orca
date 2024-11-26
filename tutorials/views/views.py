@@ -20,6 +20,9 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from datetime import datetime
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from tutorials.models import Lesson
 
 
 @login_required
@@ -217,3 +220,14 @@ class SignUpView(LoginProhibitedMixin, FormView):
 def lesson_requests(request):
     lessons = Lesson.objects.filter(status='Pending').order_by('date')
     return render(request, 'lesson_requests.html', {'lessons': lessons})
+
+
+@login_required
+def tutor_dashboard(request):
+    user = request.user
+    tutor_lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now()).order_by('date')[:5]  # 获取 tutor 的课程
+    context = {
+        'user': user,
+        'tutor_lessons': tutor_lessons,
+    }
+    return render(request, 'tutor_dashboard.html', context)
