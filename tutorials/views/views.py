@@ -20,6 +20,9 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from datetime import datetime
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from tutorials.models import Lesson
 
 
 @login_required
@@ -214,3 +217,17 @@ class SignUpView(LoginProhibitedMixin, FormView):
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
     
+def lesson_requests(request):
+    lessons = Lesson.objects.filter(status='Pending').order_by('date')
+    return render(request, 'lesson_requests.html', {'lessons': lessons})
+
+#tutor page
+@login_required
+def tutor_dashboard(request):
+    user = request.user
+    upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now()).order_by('date')[:5]
+    context = {
+        'user': user,
+        'upcoming_lessons': upcoming_lessons,
+    }
+    return render(request, 'tutor_dashboard.html', context)

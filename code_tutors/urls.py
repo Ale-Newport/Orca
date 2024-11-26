@@ -37,6 +37,8 @@ urlpatterns = [
     path('upcoming_lessons/', managment_views.view_upcoming_lessons, name='view_upcoming_lessons'),
     path('update_lesson/<int:pk>/', managment_views.update_lesson, name='update_lesson'),
     path('remove_lesson/<int:pk>/', managment_views.remove_lesson, name='remove_lesson'),
+    path('lesson_requests/', views.lesson_requests, name='lesson_requests'),
+    path('tutor_dashboard/', views.tutor_dashboard, name='tutor_dashboard'),
 
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
