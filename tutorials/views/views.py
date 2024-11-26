@@ -221,11 +221,11 @@ def lesson_requests(request):
     lessons = Lesson.objects.filter(status='Pending').order_by('date')
     return render(request, 'lesson_requests.html', {'lessons': lessons})
 
-
+#tutor page
 @login_required
 def tutor_dashboard(request):
     user = request.user
-    tutor_lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now()).order_by('date')[:5]  # 获取 tutor 的课程
+    tutor_lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now()).order_by('date')[:5]  # get tutor lessons (haven't done)
     context = {
         'user': user,
         'tutor_lessons': tutor_lessons,
