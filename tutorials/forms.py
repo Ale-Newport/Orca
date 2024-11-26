@@ -1,4 +1,3 @@
-"""Forms for the tutorials app."""
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
@@ -127,24 +126,24 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
    
         )
         return user
-    
+
+
 class LessonRequestForm(forms.ModelForm):
-    preferred_date = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date'}),
-        required=True
-    )
-    preferred_time = forms.TimeField(
-        widget=forms.TimeInput(attrs={'type': 'time'}),
-        required=True
-    )
-    notes = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 4}),
-        required=False
-    )
+    preferred_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
+    preferred_time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time', 'step': 900}), required=True)  # 900 seconds = 15 minutes
+    duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15}), required=True)
+    recurrence = forms.ChoiceField(choices=[('None', 'None'), ('Daily', 'Daily'), ('Weekly', 'Weekly'), ('Monthly', 'Monthly')], required=False)
+    notes = forms.CharField(widget=forms.Textarea(attrs={'rows': 4}), required=False)
 
     class Meta:
         model = Lesson
-        fields = ['subject', 'duration', 'preferred_date', 'preferred_time', 'notes']
+        fields = ['subject', 'preferred_date', 'preferred_time', 'duration', 'recurrence', 'notes']
+
+    def clean_preferred_time(self):
+        preferred_time = self.cleaned_data.get('preferred_time')
+        if preferred_time.minute % 15 != 0:
+            raise forms.ValidationError('Please select a time in 15-minute intervals.')
+        return preferred_time
 
     def clean(self):
         cleaned_data = super().clean()

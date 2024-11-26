@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -23,15 +22,13 @@ def view_upcoming_lessons(request):
 
 @login_required
 def request_lesson(request):
-    if request.method == 'GET':
-        form = LessonRequestForm()
-        return render(request, 'request_lesson.html', {'form': form})
-    elif request.method == 'POST':
+    if request.method == 'POST':
         form = LessonRequestForm(request.POST)
         if form.is_valid():
             try:
                 lesson = form.save(commit=False)
                 lesson.status = 'Pending'
+                lesson.student = request.user
 
                 # Assuming your form has a 'date' field that combines date and time.
                 preferred_date = form.cleaned_data.get('date')
@@ -41,30 +38,42 @@ def request_lesson(request):
                     form.add_error(None, 'A valid date and time are required.')
                     return render(request, 'request_lesson.html', {'form': form})
 
-                # Set the student to the logged-in user
-                lesson.student = request.user
-
-                # Save the lesson to the database
+                # Save the initial lesson
                 lesson.save()
 
-                # Generate Invoice for the lesson
-                generate_invoice_for_lesson(lesson)
+                # Handle recurrence
+                recurrence = form.cleaned_data.get('recurrence')
+                if recurrence and recurrence != 'None':
+                    recurrence_map = {
+                        'Daily': 1,
+                        'Weekly': 7,
+                        'Monthly': 30,
+                    }
+                    delta = recurrence_map[recurrence]
+                    for i in range(1, 10):  # Assuming a maximum of 10 recurring sessions
+                        new_date = lesson.date + timedelta(days=delta * i)
+                        if not Lesson.objects.filter(date=new_date, subject=lesson.subject).exists():
+                            Lesson.objects.create(
+                                student=lesson.student,
+                                subject=lesson.subject,
+                                date=new_date,
+                                duration=lesson.duration,
+                                tutor=lesson.tutor,
+                                status='Pending',
+                                notes=lesson.notes,
+                            )
 
-                messages.success(request, 'Your lesson request has been submitted and is currently pending approval. An invoice has been generated.')
-                return HttpResponseRedirect(reverse('view_upcoming_lessons'))
-            
+                messages.success(request, 'Your lesson request has been submitted and is currently pending approval.')
+                return redirect('view_upcoming_lessons')
             except Exception as e:
-                # Log the exception to see if there are any save errors
-                print(f"Error saving lesson: {e}")
-                messages.error(request, 'There was an error saving your lesson request. Please try again.')
+                messages.error(request, f'There was an error saving your lesson request: {str(e)}')
                 return render(request, 'request_lesson.html', {'form': form})
         else:
-            # Debugging form errors if the form is invalid
-            print(f"Form Errors: {form.errors.as_json()}")  # Full details of form errors
             messages.error(request, 'There was an error with your submission. Please check the form for details.')
             return render(request, 'request_lesson.html', {'form': form})
     else:
-        return HttpResponse(status=405)  # Method Not Allowed for unsupported request methods
+        form = LessonRequestForm()
+    return render(request, 'request_lesson.html', {'form': form})
 
 
 @login_required

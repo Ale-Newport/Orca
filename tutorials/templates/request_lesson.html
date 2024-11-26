@@ -1,5 +1,3 @@
-<!-- request_lesson.html -->
-
 {% extends "base_content.html" %}
 
 {% block content %}
@@ -33,6 +31,12 @@
             {{ form.duration.label_tag }}
             {{ form.duration }}
             {{ form.duration.errors }}
+        </div>
+
+        <div class="form-group">
+            {{ form.recurrence.label_tag }}
+            {{ form.recurrence }}
+            {{ form.recurrence.errors }}
         </div>
 
         <div class="form-group">
