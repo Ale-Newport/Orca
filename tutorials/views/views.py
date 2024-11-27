@@ -225,9 +225,9 @@ def lesson_requests(request):
 @login_required
 def tutor_dashboard(request):
     user = request.user
-    tutor_lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now()).order_by('date')[:5]  # get tutor lessons (haven't done)
+    upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now()).order_by('date')[:5]
     context = {
         'user': user,
-        'tutor_lessons': tutor_lessons,
+        'upcoming_lessons': upcoming_lessons,
     }
     return render(request, 'tutor_dashboard.html', context)
