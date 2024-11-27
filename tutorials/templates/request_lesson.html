@@ -8,41 +8,7 @@
     <form action="{% url 'request_lesson' %}" method="post">
         {% csrf_token %}
 
-        <div class="form-group">
-            {{ form.subject.label_tag }}
-            {{ form.subject }}
-            {{ form.subject.errors }}
-        </div>
-
-        <div class="form-group">
-            {{ form.preferred_date.label_tag }}
-            {{ form.preferred_date }}
-            {{ form.preferred_date.errors }}
-        </div>
-
-        <div class="form-group">
-            {{ form.duration.label_tag }}
-            {{ form.duration }}
-            {{ form.duration.errors }}
-        </div>
-
-        <div class="form-group">
-            {{ form.recurrence.label_tag }}
-            {{ form.recurrence }}
-            {{ form.recurrence.errors }}
-        </div>
-
-        <div class="form-group">
-            {{ form.end_date.label_tag }}
-            {{ form.end_date }}
-            {{ form.end_date.errors }}
-        </div>
-
-        <div class="form-group">
-            {{ form.notes.label_tag }}
-            {{ form.notes }}
-            {{ form.notes.errors }}
-        </div>
+        {% include 'partials/bootstrap_form.html' with form=form %}
 
         {{ form.non_field_errors }}
 

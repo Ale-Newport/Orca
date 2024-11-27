@@ -131,16 +131,16 @@ class LogInView(LoginProhibitedMixin, View):
 
     def post(self, request):
         """Handle log in attempt."""
-
         form = LogInForm(request.POST)
-        self.next = request.POST.get('next') or settings.REDIRECT_URL_WHEN_LOGGED_IN
-        user = form.get_user()
-        if user is not None:
-            login(request, user)
-            if user.username == "@administrator":
-                return redirect('requests')
-            return redirect(self.next)
-        messages.add_message(request, messages.ERROR, "The credentials provided were invalid!")
+        if form.is_valid():
+            user = form.get_user()
+            if user is not None:
+                login(request, user)
+                return redirect(self.get_redirect_url(user))
+            else:
+                messages.add_message(request, messages.ERROR, "The credentials provided were invalid!")
+        else:
+            messages.add_message(request, messages.ERROR, "Please correct the errors below.")
         return self.render()
 
     def render(self):
@@ -148,6 +148,15 @@ class LogInView(LoginProhibitedMixin, View):
 
         form = LogInForm()
         return render(self.request, 'log_in.html', {'form': form, 'next': self.next})
+
+    def get_redirect_url(self, user):
+        """Return the redirect URL based on user type."""
+        if user.type == 'admin':
+            return reverse('admin:index')
+        elif user.type == 'tutor':
+            return reverse('tutor_dashboard')
+        else:
+            return reverse('dashboard')
 
 
 def log_out(request):
@@ -215,8 +224,16 @@ class SignUpView(LoginProhibitedMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
-    
+        """Return the redirect URL based on user type."""
+        user = self.object
+        if user.type == 'admin':
+            return reverse('admin')
+        elif user.type == 'tutor':
+            return reverse('tutor_dashboard')
+        else:
+            return reverse('dashboard')
+
+
 def lesson_requests(request):
     lessons = Lesson.objects.filter(status='Pending').order_by('date')
     return render(request, 'lesson_requests.html', {'lessons': lessons})
