@@ -119,13 +119,11 @@ class LoginProhibitedMixin:
 
 class LogInView(LoginProhibitedMixin, View):
     """Display login screen and handle user login."""
-
     http_method_names = ['get', 'post']
     redirect_when_logged_in_url = settings.REDIRECT_URL_WHEN_LOGGED_IN
 
     def get(self, request):
         """Display log in template."""
-
         self.next = request.GET.get('next') or ''
         return self.render()
 
@@ -145,7 +143,6 @@ class LogInView(LoginProhibitedMixin, View):
 
     def render(self):
         """Render log in template with blank log in form."""
-
         form = LogInForm()
         return render(self.request, 'log_in.html', {'form': form, 'next': self.next})
 
@@ -161,7 +158,6 @@ class LogInView(LoginProhibitedMixin, View):
 
 def log_out(request):
     """Log out the current user"""
-
     logout(request)
     return redirect('home')
 

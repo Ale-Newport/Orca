@@ -131,19 +131,12 @@ class LessonRequestForm(forms.ModelForm):
         recurrence = cleaned_data.get('recurrence')
         end_date = cleaned_data.get('end_date')
 
-        # Check if the time is in 15-minute intervals
         if duration % 15 != 0:
             raise forms.ValidationError('Please select a duration in 15-minute intervals.')
-
-        # Check if the duration is at least 30 minutes
         if duration < 30:
             raise forms.ValidationError('The duration must be at least 30 minutes.')
-
-        # Check if end_date is provided when recurrence is not 'None'
         if recurrence != 'None' and not end_date:
             raise forms.ValidationError('Please enter an end date for the recurrence.')
-
-        # Check if end_date is provided without a recurrence
         if end_date and recurrence == 'None':
             raise forms.ValidationError('To have an end date, you must select a recurrence.')
 
