@@ -65,7 +65,7 @@ class Lesson(models.Model):
         ('Web Development', 'Web Development'),
     ])
     date = models.DateTimeField()
-    duration = models.PositiveIntegerField(validators=[MinValueValidator(30), MaxValueValidator(120)])
+    duration = models.PositiveIntegerField(validators=[MinValueValidator(30), MaxValueValidator(240)])
     tutor = models.CharField(max_length=100, default="Unknown Tutor")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     notes = models.TextField(blank=True, null=True)

@@ -116,13 +116,9 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
         )
         return user
 
-    
-
-
 
 class LessonRequestForm(forms.ModelForm):
-    preferred_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
-    preferred_time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time', 'step': 900}), required=True)  # 900 seconds = 15 minutes
+    preferred_date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={'type':'datetime-local', 'step': 900}), required=True) # 900 seconds = 15 minutes
     duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15, 'min': 30, 'max': 240}), required=True)
     recurrence = forms.ChoiceField(choices=[('None', 'None'), ('Daily', 'Daily'), ('Weekly', 'Weekly'), ('Monthly', 'Monthly')], required=False)
     end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
@@ -130,39 +126,18 @@ class LessonRequestForm(forms.ModelForm):
 
     class Meta:
         model = Lesson
-        fields = ['subject', 'preferred_date', 'preferred_time', 'duration', 'recurrence', 'end_date', 'notes']
+        fields = ['subject', 'preferred_date', 'duration', 'recurrence', 'end_date', 'notes']
 
     def clean(self):
-        
         cleaned_data = super().clean()
         preferred_date = cleaned_data.get('preferred_date')
-        preferred_time = cleaned_data.get('preferred_time')
         duration = cleaned_data.get('duration')
         recurrence = cleaned_data.get('recurrence')
         end_date = cleaned_data.get('end_date')
 
-        # Check if both date and time are provided
-        if preferred_date and preferred_time:
-            combined_datetime = datetime.combine(preferred_date, preferred_time)
-            end_time = combined_datetime + timedelta(minutes=duration)
-            cleaned_data['start_datetime'] = combined_datetime
-            cleaned_data['end_datetime'] = end_time
-
-            # Conflict detection logic
-            overlapping_lessons = Lesson.objects.filter(
-                tutor=self.instance.tutor,  # May need to adjust this
-                start_datetime__lt=end_time,
-                end_datetime__gt=combined_datetime
-            )
-
-            if overlapping_lessons.exists():
-                raise ValidationError("The selected time conflicts with another lesson.")
-        else:
-            raise forms.ValidationError('Please enter both date and time.')
-
         # Check if the time is in 15-minute intervals
-        if preferred_time.minute % 15 != 0:
-            raise forms.ValidationError('Please select a time in 15-minute intervals.')
+        if duration % 15 != 0:
+            raise forms.ValidationError('Please select a duration in 15-minute intervals.')
 
         # Check if the duration is at least 30 minutes
         if duration < 30:
@@ -176,14 +151,4 @@ class LessonRequestForm(forms.ModelForm):
         if end_date and recurrence == 'None':
             raise forms.ValidationError('To have an end date, you must select a recurrence.')
 
-        # Check if end_date is before preferred_date
-        if end_date and end_date < preferred_date:
-            raise forms.ValidationError('The end date cannot be before the preferred date.')
-        
-        if preferred_date < datetime.now().date():
-            raise forms.ValidationError('Date cannot be in the past.')
-        
-        if end_date < preferred_date:
-            raise forms.ValidationError('End date cannot be in the before preferred date.')
-        
         return cleaned_data

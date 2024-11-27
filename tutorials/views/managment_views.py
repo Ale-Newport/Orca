@@ -31,7 +31,7 @@ def request_lesson(request):
                 lesson.student = request.user
 
                 # Assuming your form has a 'date' field that combines date and time.
-                preferred_date = form.cleaned_data.get('date')
+                preferred_date = form.cleaned_data.get('preferred_date')
                 if preferred_date:
                     lesson.date = preferred_date
                 else:
