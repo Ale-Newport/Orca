@@ -30,7 +30,8 @@ class InvoiceAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'type')
+    list_filter = ('type',)
     search_fields = ('username', 'email', 'first_name', 'last_name')
     ordering = ('username',)
 

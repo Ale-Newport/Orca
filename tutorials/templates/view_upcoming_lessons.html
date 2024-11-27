@@ -3,31 +3,26 @@
 {% block content %}
 <div class="container">
     {% include "partials/messages.html" %}
-    <h1 class="text-center mb-4">All My Upcoming Lessons</h1>
+    <h1 class="text-center mb-4">Upcoming Lessons</h1>
     <table class="table table-striped table-hover">
         <thead>
             <tr>
-                <th scope="col">Lesson ID</th>
-                <th scope="col">Details</th>
-                <th scope="col"></th>
+                <th scope="col">Subject</th>
+                <th scope="col">Date</th>
+                <th scope="col">Time</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Tutor</th>
             </tr>
         </thead>
         <tbody>
             {% for lesson in upcoming_lessons %}
-            <tr>
-                <td>{{ lesson.id }}</td>
-                <td>
-                    {{ lesson.subject }} on {{ lesson.date|date:"D, d M Y H:i" }} with {{ lesson.tutor }}
-                    ({{ lesson.duration }} mins)
-                </td>
-                <td>
-                    <a href="{% url 'update_lesson' lesson.id %}"><i class="bi bi-pen-fill"></i></a>
-                    &nbsp;&nbsp; 
-                    <a href="{% url 'remove_lesson' lesson.id %}" class="text-danger">
-                        <i class="bi bi-trash3-fill"></i>
-                      </a>
-                </td>
-            </tr>
+                <tr>
+                    <td>{{ lesson.subject }}</td>
+                    <td>{{ lesson.date|date:"D, d M Y" }}</td>
+                    <td>{{ lesson.date|date:"H:i" }}</td>
+                    <td>{{ lesson.duration }} mins</td>
+                    <td>{{ lesson.tutor }}</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>

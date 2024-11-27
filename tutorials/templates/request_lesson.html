@@ -7,7 +7,6 @@
     
     <form action="{% url 'request_lesson' %}" method="post">
         {% csrf_token %}
-        {{ form.non_field_errors }}
 
         <div class="form-group">
             {{ form.subject.label_tag }}
@@ -40,10 +39,18 @@
         </div>
 
         <div class="form-group">
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+            {{ form.end_date.errors }}
+        </div>
+
+        <div class="form-group">
             {{ form.notes.label_tag }}
             {{ form.notes }}
             {{ form.notes.errors }}
         </div>
+
+        {{ form.non_field_errors }}
 
         <button type="submit" class="btn btn-primary">Submit Request</button>
     </form>

@@ -43,36 +43,31 @@
         </div>
     </div>
 
-   <!-- Upcoming Lessons Section -->
+    <!-- Upcoming Lessons Section -->
     <div class="upcoming-lessons-section mb-5">
-        
-        {% if upcoming_lessons %}
+        <h2 class="card-title text-center">Upcoming Lessons</h2>
+        <a href="{% url 'view_upcoming_lessons' %}" class="text-decoration-none">
             <div class="card shadow-sm border-info">
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        {% for lesson in upcoming_lessons %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h5>{{ lesson.subject }}</h5>
-                                    <p>{{ lesson.date|date:"D, d M Y H:i" }} with {{ lesson.tutor.full_name }}</p>
-                                </div>
-                                <span class="badge badge-primary badge-pill">{{ lesson.duration }} mins</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                <div class="card-body text-center">
+                    {% if upcoming_lessons %}
+                        <ul class="list-group list-group-flush">
+                            {% for lesson in upcoming_lessons %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5>{{ lesson.subject }}</h5>
+                                        <p>{{ lesson.date|date:"D, d M Y H:i" }} with {{ lesson.tutor }}</p>
+                                    </div>
+                                    <span class="badge badge-primary badge-pill">{{ lesson.duration }} mins</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-center">No upcoming lessons. <a href="{% url 'request_lesson' %}">Request a lesson</a> to get started!</p>
+                    {% endif %}
                 </div>
             </div>
-        {% else %}
-            <p class="text-center">No upcoming lessons. <a href="{% url 'request_lesson' %}">Request a lesson</a> to get started!</p>
-        {% endif %}
-        <div class="text-center">
-            <a href="{% url 'view_upcoming_lessons' %}">
-                <button type="button" class="btn btn-primary btn-sm">Upcoming Lessons</button>
-            </a>
-        </div>
+        </a>
     </div>
-
-
 
     <!-- Notifications Section -->
     <div class="notifications-section mb-5">

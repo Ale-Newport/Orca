@@ -127,31 +127,59 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
         )
         return user
 
+    
 
 class LessonRequestForm(forms.ModelForm):
     preferred_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
     preferred_time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time', 'step': 900}), required=True)  # 900 seconds = 15 minutes
-    duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15}), required=True)
+    duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15, 'min': 30, 'max': 240}), required=True)
     recurrence = forms.ChoiceField(choices=[('None', 'None'), ('Daily', 'Daily'), ('Weekly', 'Weekly'), ('Monthly', 'Monthly')], required=False)
+    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
     notes = forms.CharField(widget=forms.Textarea(attrs={'rows': 4}), required=False)
 
     class Meta:
         model = Lesson
-        fields = ['subject', 'preferred_date', 'preferred_time', 'duration', 'recurrence', 'notes']
-
-    def clean_preferred_time(self):
-        preferred_time = self.cleaned_data.get('preferred_time')
-        if preferred_time.minute % 15 != 0:
-            raise forms.ValidationError('Please select a time in 15-minute intervals.')
-        return preferred_time
+        fields = ['subject', 'preferred_date', 'preferred_time', 'duration', 'recurrence', 'end_date', 'notes']
 
     def clean(self):
         cleaned_data = super().clean()
         preferred_date = cleaned_data.get('preferred_date')
         preferred_time = cleaned_data.get('preferred_time')
+        duration = cleaned_data.get('duration')
+        recurrence = cleaned_data.get('recurrence')
+        end_date = cleaned_data.get('end_date')
+
+        # Check if both date and time are provided
         if preferred_date and preferred_time:
             combined_datetime = datetime.combine(preferred_date, preferred_time)
             cleaned_data['date'] = combined_datetime
         else:
             raise forms.ValidationError('Please enter both date and time.')
+
+        # Check if the time is in 15-minute intervals
+        if preferred_time.minute % 15 != 0:
+            raise forms.ValidationError('Please select a time in 15-minute intervals.')
+
+        # Check if the duration is at least 30 minutes
+        if duration < 30:
+            raise forms.ValidationError('The duration must be at least 30 minutes.')
+
+        # Check if end_date is provided when recurrence is not 'None'
+        if recurrence != 'None' and not end_date:
+            raise forms.ValidationError('Please enter an end date for the recurrence.')
+
+        # Check if end_date is provided without a recurrence
+        if end_date and recurrence == 'None':
+            raise forms.ValidationError('To have an end date, you must select a recurrence.')
+
+        # Check if end_date is before preferred_date
+        if end_date and end_date < preferred_date:
+            raise forms.ValidationError('The end date cannot be before the preferred date.')
+        
+        if preferred_date < datetime.now().date():
+            raise forms.ValidationError('Date cannot be in the past.')
+        
+        if end_date < preferred_date:
+            raise forms.ValidationError('End date cannot be in the before preferred date.')
+        
         return cleaned_data

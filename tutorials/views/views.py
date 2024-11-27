@@ -28,7 +28,7 @@ from tutorials.models import Lesson
 @login_required
 def dashboard(request):
     user = request.user
-    upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now()).order_by('date')[:5]
+    upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now(), status="Approved").order_by('date')[:5]
     unpaid_invoices = Invoice.objects.filter(student=user, paid=False)
     context = {
         'user': user,

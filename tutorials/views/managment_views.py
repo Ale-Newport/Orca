@@ -16,7 +16,7 @@ from django.urls import reverse
 def view_upcoming_lessons(request):
     """View all upcoming lessons for the logged-in user."""
     user = request.user
-    upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now()).order_by('date')
+    upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now(), status="Approved").order_by('date')
     return render(request, 'view_upcoming_lessons.html', {'upcoming_lessons': upcoming_lessons})
 
 
@@ -64,7 +64,7 @@ def request_lesson(request):
                             )
 
                 messages.success(request, 'Your lesson request has been submitted and is currently pending approval.')
-                return redirect('view_upcoming_lessons')
+                return redirect('lesson_requests')
             except Exception as e:
                 messages.error(request, f'There was an error saving your lesson request: {str(e)}')
                 return render(request, 'request_lesson.html', {'form': form})
@@ -109,7 +109,7 @@ def remove_lesson(request, pk):
         return HttpResponseBadRequest('This URL only supports GET and POST requests.')
     
 
-
+@login_required
 def generate_invoice_for_lesson(lesson):
     """Generate an invoice for the given lesson."""
     amount = Decimal(lesson.duration * 10)  # Example: $10 per minute

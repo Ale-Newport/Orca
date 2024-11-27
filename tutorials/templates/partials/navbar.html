@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <!-- Brand Logo -->
     <a class="navbar-brand" href="{% url 'dashboard' %}">
-      <i class="fas fa-tasks"></i> Task Manager
+      <i class="fas fa-tasks"></i> Menu
     </a>
 
     <!-- Toggler for Mobile -->
@@ -19,8 +19,15 @@
             <a class="nav-link" href="{% url 'view_schedule' %}"><i class="fas fa-calendar-alt"></i> Schedule</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'request_lesson' %}"><i class="fas fa-book-open"></i> Request Lesson</a>
+            <a class="nav-link" href="{% url 'view_upcoming_lessons' %}"><i class="fas fa-book"></i> Lessons</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'lesson_requests' %}"><i class="fas fa-book-open"></i> Requests</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'invoices' %}"><i class="fas fa-file-invoice-dollar"></i> Incoices</a>
+          </li>
+          &nbsp;&nbsp;&nbsp;
 
           <!-- User Dropdown Menu -->
           <li class="nav-item dropdown">
