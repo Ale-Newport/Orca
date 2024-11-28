@@ -21,6 +21,7 @@ from django.urls import path
 from tutorials.views import views, managment_views
 
 urlpatterns = [
+    path('admin/logout/', views.log_out, name='admin_logout'),
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('dashboard/', views.dashboard, name='dashboard'),
