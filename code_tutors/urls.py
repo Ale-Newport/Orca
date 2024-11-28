@@ -40,7 +40,9 @@ urlpatterns = [
     path('remove_lesson/<int:pk>/', managment_views.remove_lesson, name='remove_lesson'),
     path('lesson_requests/', views.lesson_requests, name='lesson_requests'),
     path('tutor_dashboard/', views.tutor_dashboard, name='tutor_dashboard'),
-
+    path('chooss_class/', views.choose_class, name= 'choose_class' ),
+    path('tutor_schedule/', views.tutor_schedule, name= 'tutor_schedule'),
+    path('tutor_schedule/<int:year>/<int:month>/', views.tutor_schedule, name= 'tutor_schedule'),
 
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
