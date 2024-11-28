@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
   <div class="container-fluid">
     <!-- Brand Logo -->
-    <a class="navbar-brand" href="{% url 'dashboard' %}">
+    <a class="navbar-brand" href="{% if user.type == 'tutor' %}{% url 'tutor_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}">
       <i class="fas fa-tasks"></i> Menu
     </a>
 
@@ -25,7 +25,7 @@
             <a class="nav-link" href="{% url 'lesson_requests' %}"><i class="fas fa-book-open"></i> Requests</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'invoices' %}"><i class="fas fa-file-invoice-dollar"></i> Incoices</a>
+            <a class="nav-link" href="{% url 'invoices' %}"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
           </li>
           &nbsp;&nbsp;&nbsp;
 
