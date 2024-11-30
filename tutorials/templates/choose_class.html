@@ -11,17 +11,18 @@
                         <th>ID</th>
                         <th>Student Name</th>
                         <th>Class</th>
-                        <th>Time</th>
+                        <th>Duration</th>
                         <th>Select</th> <!-- Checkbox Column -->
                     </tr>
                 </thead>
                 <tbody>
                     {% for lesson in lessons %}
                         <tr>
-                            <td>{{ lesson.id }}</td>
-                            <td>{{ lesson.student_name }}</td>
-                            <td>{{ lesson.class_name }}</td>
-                            <td>{{ lesson.time|date:"D, d M Y H:i" }}</td>
+                            <td>{{ lesson.student.full_name }}</td>
+                            <td>{{ lesson.subject }}</td>
+                            <td>{{ lesson.date }}</td>
+                            <td>{{ lesson.duration }} minutes</td>
+
                             <td class="text-center">
                                 <input type="checkbox" name="selected_classes" value="{{ lesson.id }}">
                             </td>

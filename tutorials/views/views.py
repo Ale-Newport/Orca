@@ -246,7 +246,8 @@ def tutor_dashboard(request):
     return render(request, 'tutor_dashboard.html', context)
 
 def choose_class(request):
-    return render(request, 'choose_class.html')
+    lessons = Lesson.objects.filter(status='Pending').order_by('date')
+    return render(request, 'choose_class.html', {'lessons': lessons})
 
 @login_required
 def tutor_schedule(request, year=None, month=None):

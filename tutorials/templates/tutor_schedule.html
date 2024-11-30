@@ -3,15 +3,10 @@
 <div class="container mt-5">
     <h1 class="text-center mb-4">Schedule for {{ month }}/{{ year }}</h1>
 
-    <!-- Navigation Buttons -->
-<!--     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{% url 'tutor_schedule' prev_year prev_month %}" class="btn btn-primary">
-            <i class="fas fa-chevron-left"></i> Previous Month
-        </a>
-        <a href="{% url 'tutor_schedule' next_year next_month %}" class="btn btn-primary">
-            Next Month <i class="fas fa-chevron-right"></i>
-        </a>
-    </div> -->
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{% url 'view_schedule' prev_year prev_month %}" class="btn btn-primary">Previous Month</a>
+        <a href="{% url 'view_schedule' next_year next_month %}" class="btn btn-primary">Next Month</a>
+    </div>
 
     <!-- Calendar Table -->
     <div class="table-responsive">
