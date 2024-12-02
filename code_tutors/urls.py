@@ -18,7 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
-from tutorials.views import views, managment_views
+from tutorials.views import views, managment_views, admin_views
 
 urlpatterns = [
     path('admin/logout/', views.log_out, name='admin_logout'),
@@ -44,6 +44,7 @@ urlpatterns = [
     path('chooss_class/', views.choose_class, name= 'choose_class' ),
     path('tutor_schedule/', views.tutor_schedule, name= 'tutor_schedule'),
     path('tutor_schedule/<int:year>/<int:month>/', views.tutor_schedule, name= 'tutor_schedule'),
+    path('admin_dashboard/', admin_views.admin_dashboard, name='admin_dashboard'),
 
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

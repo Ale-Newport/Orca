@@ -149,7 +149,7 @@ class LogInView(LoginProhibitedMixin, View):
     def get_redirect_url(self, user):
         """Return the redirect URL based on user type."""
         if user.type == 'admin':
-            return reverse('admin:index')
+            return reverse('admin_dashboard')
         elif user.type == 'tutor':
             return reverse('tutor_dashboard')
         else:
@@ -223,7 +223,7 @@ class SignUpView(LoginProhibitedMixin, FormView):
         """Return the redirect URL based on user type."""
         user = self.object
         if user.type == 'admin':
-            return reverse('admin')
+            return reverse('admin_dashboard')
         elif user.type == 'tutor':
             return reverse('tutor_dashboard')
         else:
