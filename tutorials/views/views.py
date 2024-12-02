@@ -23,9 +23,10 @@ from datetime import datetime
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from tutorials.models import Lesson
-
+from tutorials.decorators import user_type_required
 
 @login_required
+@user_type_required(['student'])
 def dashboard(request):
     user = request.user
     upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now(), status="Approved").order_by('date')[:5]
@@ -102,8 +103,13 @@ class LoginProhibitedMixin:
         return super().dispatch(*args, **kwargs)
 
     def handle_already_logged_in(self, *args, **kwargs):
-        url = self.get_redirect_when_logged_in_url()
-        return redirect(url)
+        user = self.request.user
+        if user.type == 'admin':
+            return redirect('admin:index')
+        elif user.type == 'tutor':
+            return redirect('tutor_dashboard')
+        else:
+            return redirect('dashboard')
 
     def get_redirect_when_logged_in_url(self):
         """Returns the url to redirect to when not logged in."""
@@ -236,6 +242,7 @@ def lesson_requests(request):
 
 #tutor page
 @login_required
+@user_type_required(['tutor'])
 def tutor_dashboard(request):
     user = request.user
     upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now()).order_by('date')[:5]
@@ -250,6 +257,7 @@ def choose_class(request):
     return render(request, 'choose_class.html', {'lessons': lessons})
 
 @login_required
+@user_type_required(['tutor'])
 def tutor_schedule(request, year=None, month=None):
     user = request.user
 
