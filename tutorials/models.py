@@ -90,3 +90,36 @@ class Invoice(models.Model):
     def __str__(self):
         status = "Paid" if self.paid else "Unpaid"
         return f"Invoice {self.id} for {self.student} - {status}"
+    
+class tutorRequest(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
+
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tutor_requests")
+    subject = models.CharField(max_length=100, choices=[
+        ('Python', 'Python'),
+        ('Java', 'Java'),
+        ('C++', 'C++'),
+        ('Scala', 'Scala'),
+        ('Web Development', 'Web Development'),
+    ])
+    date = models.DateTimeField()
+    duration = models.PositiveIntegerField(validators=[MinValueValidator(30), MaxValueValidator(240)])
+    tutor = models.CharField(max_length=100, default="Unknown Tutor")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    notes = models.TextField(blank=True, null=True)
+
+    def is_assigned(self):
+        """Return True if a tutor has been assigned."""
+        return self.tutor != "Unknown Tutor"
+
+    is_assigned.boolean = True  # Show as a boolean field in the admin interface
+    is_assigned.short_description = 'Assigned?'
+
+    def __str__(self):
+        return f"{self.subject} with {self.student.username} on {self.date}"
+    
+    
