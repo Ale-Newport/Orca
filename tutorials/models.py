@@ -7,7 +7,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.timezone import now
 from datetime import timedelta
 from decimal import Decimal
-
+from django.contrib.auth.models import User
 
 class User(AbstractUser):
     """Model used for user authentication, and team member related information."""
@@ -49,6 +49,17 @@ class User(AbstractUser):
         return self.gravatar(size=60)
 
 
+class Notification(models.Model):
+    """Model to store notifications for users."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notification for {self.user.username} - {'Read' if self.is_read else 'Unread'}"
+
+
 class Lesson(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
@@ -79,18 +90,20 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.subject} with {self.student.username} on {self.date}"
-    
-    
+
+
 class Invoice(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='invoices')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     issued_date = models.DateField(auto_now_add=True)
     due_date = models.DateField()
     paid = models.BooleanField(default=False)
+
     def __str__(self):
         status = "Paid" if self.paid else "Unpaid"
         return f"Invoice {self.id} for {self.student} - {status}"
-    
+
+
 class tutorRequest(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
@@ -121,5 +134,3 @@ class tutorRequest(models.Model):
 
     def __str__(self):
         return f"{self.subject} with {self.student.username} on {self.date}"
-    
-    
