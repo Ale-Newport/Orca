@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Lesson, Invoice
+from .models import User, Lesson, Invoice, tutorRequest
 from django.contrib import admin
 from .models import Lesson
 
@@ -35,4 +35,9 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'email', 'first_name', 'last_name')
     ordering = ('username',)
 
-
+@admin.register(tutorRequest)
+class tutorAdmin(admin.ModelAdmin):
+    list_display = ('student', 'subject', 'date', 'duration', 'tutor')
+    list_filter = ('tutor',)
+    search_fields = ('student',)
+    ordering = ('-date',)
