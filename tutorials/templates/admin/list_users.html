@@ -1,0 +1,101 @@
+{% extends 'base_content.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Users</h1>
+
+    <!-- Filter, Search, and Order Form -->
+    <form method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-2">
+                <select name="type" class="form-control">
+                    <option value="">All Types</option>
+                    {% for type in user_types %}
+                    <option value="{{ type }}" {% if request.GET.type == type %}selected{% endif %}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-8">
+                <input type="text" name="search" class="form-control" placeholder="Search" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </div>
+    </form>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'username' %}order_by=-username{% else %}order_by=username{% endif %}">
+                        Username
+                        {% if request.GET.order_by == 'username' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-username' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'email' %}order_by=-email{% else %}order_by=email{% endif %}">
+                        Email
+                        {% if request.GET.order_by == 'email' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-email' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'first_name' %}order_by=-first_name{% else %}order_by=first_name{% endif %}">
+                        First Name
+                        {% if request.GET.order_by == 'first_name' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-first_name' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'last_name' %}order_by=-last_name{% else %}order_by=last_name{% endif %}">
+                        Last Name
+                        {% if request.GET.order_by == 'last_name' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-last_name' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'type' %}order_by=-type{% else %}order_by=type{% endif %}">
+                        Type
+                        {% if request.GET.order_by == 'type' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-type' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th><a href="{% url 'create_user' %}" class="fa-solid fa-plus fs-4 text-decoration-none"></a></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.first_name }}</td>
+                <td>{{ user.last_name }}</td>
+                <td>{{ user.type }}</td>
+                <td>
+                    <a href="{% url 'update_user' user.pk %}"><i class="bi bi-pen-fill"></i></a>
+                    &nbsp;&nbsp; 
+                    <a href="{% url 'delete_user' user.pk %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

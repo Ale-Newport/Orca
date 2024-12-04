@@ -11,11 +11,17 @@ h1, h2 {
 }
 
 /* Alerts */
-
 .alert {
   border-radius: 4px;
   padding: 15px;
 }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 
 /* Vertical Centering */
 .vcenter-item {
@@ -24,7 +30,6 @@ h1, h2 {
 }
 
 /* Hero Section for Home Page */
-
 .hero-section {
   color: #fff;
   background-position: center;
@@ -35,28 +40,23 @@ h1, h2 {
   justify-content: center;
   text-align: center;
 }
-
 .hero-section h1 {
   font-size: 3rem;
   font-weight: bold;
 }
-
 .hero-section .btn {
   margin: 10px;
 }
 
 /* Cover Page */
-
 h1.cover-heading {
   font-size: 3rem;
   color: #333;
 }
-
 p.cover-text {
   font-size: 1.5rem;
   color: #555;
 }
-
 .cover-card {
   background-color: rgba(255, 255, 255, 0.85);
   max-width: 500px;
@@ -66,11 +66,9 @@ p.cover-text {
 }
 
 /* Forms */
-
 .nolabel label {
   display: none;
 }
-
 ul.errorlist {
   list-style-type: none;
   padding: 0;
@@ -79,30 +77,25 @@ ul.errorlist {
 }
 
 /* Typography */
-
 .low-key {
   color: #777;
   font-weight: 300;
 }
-
 .list-title {
   margin: 15px 0;
   font-size: 1.5em;
 }
 
 /* Profile */
-
 .profile-image {
   width: 120px;
   border-radius: 50%;
   float: left;
   margin-right: 15px;
 }
-
 .profile-text {
   overflow: hidden;
 }
-
 .profile-username {
   color: #777;
   font-weight: 300;
@@ -110,29 +103,24 @@ ul.errorlist {
 }
 
 /* Hyperlinks */
-
 .content a {
   color: #007bff;
   text-decoration: none;
 }
-
 .content a:hover {
   color: #0056b3;
   text-decoration: underline;
 }
 
 /* Welcome Page */
-
 .welcome-message h1 {
   font-size: 2.5em;
   font-weight: bold;
   color: #333;
 }
-
 .quick-links {
   margin-top: 20px;
 }
-
 .quick-links .btn {
   padding: 12px 20px;
   background-color: #007bff;
@@ -142,121 +130,95 @@ ul.errorlist {
   margin-right: 10px;
   transition: background-color 0.3s ease;
 }
-
 .quick-links .btn:hover {
   background-color: #0056b3;
 }
-
 .upcoming-lessons ul {
   list-style-type: none;
   padding: 0;
 }
 
 /* Request Lessons Page */
-
-.form-group {
-  margin-bottom: 20px;
-}
-
 .btn-primary {
   background-color: #007bff;
   border-color: #007bff;
   color: #fff;
   transition: background-color 0.3s ease;
 }
-
 .btn-primary:hover {
   background-color: #0056b3;
 }
-
 .table {
   margin-top: 20px;
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
-
 .table th, .table td {
   text-align: center;
   padding: 15px;
 }
 
 /* Home Page Sections */
-
 .about-section p {
   font-size: 1.2em;
   color: #555;
 }
-
 .highlights-section .highlight {
   margin-bottom: 20px;
 }
-
 .highlights-section .highlight h4 {
   font-size: 1.2em;
   color: #333;
 }
-
 .events-section .event-card {
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-
 .contact-section {
   background-color: #333;
   color: #fff;
   padding: 40px 20px;
   text-align: center;
 }
-
 .contact-section h2 {
   color: #f8f9fa;
 }
-
 .contact-section p, .contact-section a {
   color: #ddd;
 }
-
 .contact-section a:hover {
   color: #fff;
 }
 
 
 /* Navbar  */
-
 .navbar {
   padding: 2rem 2rem;
 }
-
 .navbar-brand {
   font-weight: bold;
   font-size: 1.25rem;
 }
-
 .navbar .nav-link {
   color: #f8f9fa !important;
   padding: 0.5rem 1rem;
 }
-
 .navbar .nav-link:hover {
   color: #adb5bd !important;
 }
-
 .navbar .dropdown-menu {
   background-color: #343a40;
   border: none;
   min-width: 200px;
 }
-
 .navbar .dropdown-item {
   color: #f8f9fa;
   padding: 0.5rem 1rem;
 }
-
 .navbar .dropdown-item:hover {
   background-color: #495057;
 }
-
 .navbar .dropdown-item.text-danger:hover {
   background-color: #dc3545;
   color: #fff;

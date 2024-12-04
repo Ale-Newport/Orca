@@ -16,35 +16,56 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib import admin
 from django.urls import path
-from tutorials.views import views, managment_views, admin_views
+from django.contrib import admin
+from tutorials.views import views, student_views, tutor_views, admin_views
 
 urlpatterns = [
-    path('admin/logout/', views.log_out, name='admin_logout'),
-    path('admin/', admin.site.urls),
+    # Main pages
     path('', views.home, name='home'),
-    path('dashboard/', views.dashboard, name='dashboard'),
+    path('administrator/', admin.site.urls),
+
+    # Profile management
     path('log_in/', views.LogInView.as_view(), name='log_in'),
     path('log_out/', views.log_out, name='log_out'),
     path('password/', views.PasswordView.as_view(), name='password'),
     path('profile/', views.ProfileUpdateView.as_view(), name='profile'),
     path('sign_up/', views.SignUpView.as_view(), name='sign_up'),
-    path('request_lesson/', managment_views.request_lesson, name='request_lesson'),
-    path('view_schedule/', views.view_schedule, name='view_schedule'),
-    path('view_upcoming_lessons/', managment_views.view_upcoming_lessons, name='view_upcoming_lessons'),
-    path('invoices/', views.invoices, name='invoices'),
-    path('view_schedule/', views.view_schedule, name='view_schedule'),
-    path('view_schedule/<int:year>/<int:month>/', views.view_schedule, name='view_schedule'),
-    path('upcoming_lessons/', managment_views.view_upcoming_lessons, name='view_upcoming_lessons'),
-    path('update_lesson/<int:pk>/', managment_views.update_lesson, name='update_lesson'),
-    path('remove_lesson/<int:pk>/', managment_views.remove_lesson, name='remove_lesson'),
-    path('lesson_requests/', views.lesson_requests, name='lesson_requests'),
-    path('tutor_dashboard/', views.tutor_dashboard, name='tutor_dashboard'),
-    path('chooss_class/', views.choose_class, name= 'choose_class' ),
-    path('tutor_schedule/', views.tutor_schedule, name= 'tutor_schedule'),
-    path('tutor_schedule/<int:year>/<int:month>/', views.tutor_schedule, name= 'tutor_schedule'),
-    path('admin_dashboard/', admin_views.admin_dashboard, name='admin_dashboard'),
 
+    # Student
+    path('student/dashboard/', student_views.dashboard, name='student_dashboard'),
+    path('student/lessons/', student_views.lessons, name='student_lessons'),
+    path('student/schedule/', student_views.schedule, name='student_schedule'),
+    path('view_schedule/<int:year>/<int:month>/', student_views.schedule, name='student_schedule'),
+    path('student/requests/', student_views.requests, name='student_requests'),
+    path('student/lesson/request/', student_views.request_lesson, name='request_lesson'),
+    path('student/lesson/update/<int:pk>/', student_views.update_request, name='update_request'),
+    path('student/lesson/delete/<int:pk>/', student_views.delete_request, name='delete_request'),
+    path('student/invoices/', student_views.invoices, name='student_invoices'),
+
+    # Tutor
+    path('tutor/dashboard/', tutor_views.dashboard, name='tutor_dashboard'),
+    path('tutor/chooss_class/', tutor_views.choose_class, name= 'choose_class' ),
+    path('tutor/tutor_schedule/', tutor_views.tutor_schedule, name= 'tutor_schedule'),
+    path('tutor/tutor_schedule/<int:year>/<int:month>/', tutor_views.tutor_schedule, name= 'tutor_schedule'),
+
+    # Admin
+    path('admin/dashboard/', admin_views.dashboard, name='admin_dashboard'),
+    path('admin/users/', admin_views.list_users, name='list_users'),
+    path('admin/users/create/', admin_views.create_user, name='create_user'),
+    path('admin/users/update/<int:pk>/', admin_views.update_user, name='update_user'),
+    path('admin/users/delete/<int:pk>/', admin_views.delete_user, name='delete_user'),
+    path('admin/lessons/', admin_views.list_lessons, name='list_lessons'),
+    path('admin/lessons/create/', admin_views.create_lesson, name='create_lesson'),
+    path('admin/lessons/update/<int:pk>/', admin_views.update_lesson, name='update_lesson'),
+    path('admin/lessons/update/', admin_views.update_lessons, name='update_lessons'),
+    path('admin/lessons/assign_tutor/<int:pk>/', admin_views.assign_tutor, name='assign_tutor'),
+    path('admin/lessons/approve_lesson/<int:pk>/', admin_views.approve_lesson, name='approve_lesson'),
+    path('admin/lessons/delete/<int:pk>/', admin_views.delete_lesson, name='delete_lesson'),
+    path('admin/invoices/', admin_views.list_invoices, name='list_invoices'),
+    path('admin/invoices/create/', admin_views.create_invoice, name='create_invoice'),
+    path('admin/invoices/update/<int:pk>/', admin_views.update_invoice, name='update_invoice'),
+    path('admin/invoices/delete/<int:pk>/', admin_views.delete_invoice, name='delete_invoice'),
 ]
+
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

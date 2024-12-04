@@ -2,15 +2,11 @@
 
 {% block content %}
 <div class="container mt-5">
-    <!-- Welcome Section -->
-    <div class="welcome-section text-center mb-5">
-        <h1 class="display-4">Welcome, {{ user.first_name }}!</h1>
-        <p class="lead">Your personalized dashboard to keep track of lessons, schedules, and important notifications.</p>
-    </div>
+    
+    <h1 class="text-center mb-4">Hi, {{ user.first_name }}</h1>
 
     <!-- Quick Links Section -->
     <div class="quick-links-section row mb-5">
-        <h2 class="col-12 text-center mb-4">Quick Links</h2>
         <div class="col-md-6 col-lg-4 mb-3">
             <div class="card shadow-sm border-primary">
                 <div class="card-body text-center">
@@ -27,7 +23,7 @@
                     <i class="fas fa-calendar-alt fa-3x text-primary mb-3"></i>
                     <h5 class="card-title">View My Schedule</h5>
                     <p class="card-text">Keep track of your upcoming lessons.</p>
-                    <a href="{% url 'view_schedule' %}" class="btn btn-primary">View My Schedule</a>
+                    <a href="{% url 'student_schedule' %}" class="btn btn-primary">View My Schedule</a>
                 </div>
             </div>
         </div>
@@ -37,7 +33,7 @@
                     <i class="fas fa-file-invoice-dollar fa-3x text-primary mb-3"></i>
                     <h5 class="card-title">Invoices</h5>
                     <p class="card-text">Check your outstanding invoices and payment history.</p>
-                    <a href="{% url 'invoices' %}" class="btn btn-primary">View Invoices</a>
+                    <a href="{% url 'student_invoices' %}" class="btn btn-primary">View Invoices</a>
                 </div>
             </div>
         </div>
@@ -46,7 +42,7 @@
     <!-- Upcoming Lessons Section -->
     <div class="upcoming-lessons-section mb-5">
         <h2 class="card-title text-center">Upcoming Lessons</h2>
-        <a href="{% url 'view_upcoming_lessons' %}" class="text-decoration-none">
+        <a href="{% url 'student_lessons' %}" class="text-decoration-none">
             <div class="card shadow-sm border-info">
                 <div class="card-body text-center">
                     {% if upcoming_lessons %}
@@ -72,15 +68,19 @@
     <!-- Notifications Section -->
     <div class="notifications-section mb-5">
         <h2 class="text-center mb-4">Notifications</h2>
+        {% if unpaid_invoices %}
         <div class="card shadow-sm border-warning">
             <div class="card-body text-center">
-                {% if unpaid_invoices %}
-                    <p>You have unpaid invoices. Please check <a href="{% url 'invoices' %}">your invoices</a>.</p>
-                {% else %}
-                    <p>All invoices are up to date. No pending payments!</p>
-                {% endif %}
+                <p>You have unpaid invoices. Please check <a href="{% url 'student_invoices' %}">your invoices</a>.</p>
             </div>
         </div>
+        {% else %}
+        <div class="card shadow-sm border-succes">
+            <div class="card-body text-center">
+                <p>All invoices are up to date. No pending payments!</p>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

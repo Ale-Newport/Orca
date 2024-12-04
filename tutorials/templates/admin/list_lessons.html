@@ -1,0 +1,168 @@
+{% extends 'base_content.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Lessons</h1>
+
+    <!-- Filter, Search, and Order Form -->
+    <form method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-2">
+                <select name="student" class="form-control">
+                    <option value="">All Students</option>
+                    {% for student in students_with_lessons %}
+                    <option value="{{ student.id }}" {% if request.GET.student == student.id|stringformat:"s" %}selected{% endif %}>{{ student.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="subject" class="form-control">
+                    <option value="">All Subjects</option>
+                    {% for subject in subjects %}
+                    <option value="{{ subject }}" {% if request.GET.subject == subject %}selected{% endif %}>{{ subject }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="tutor" class="form-control">
+                    <option value="">All Tutors</option>
+                    {% for tutor in tutors %}
+                    <option value="{{ tutor }}" {% if request.GET.tutor == tutor %}selected{% endif %}>{{ tutor }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date" class="form-control" placeholder="Date" value="{{ request.GET.date }}">
+            </div>
+            <div class="col-md-2">
+                <select name="duration" class="form-control">
+                    <option value="">All Durations</option>
+                    {% for duration in durations %}
+                    <option value="{{ duration }}" {% if request.GET.duration == duration|stringformat:"s" %}selected{% endif %}>{{ duration }} mins</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-control">
+                    <option value="">All Statuses</option>
+                    <option value="Pending" {% if request.GET.status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Approved" {% if request.GET.status == 'Approved' %}selected{% endif %}>Approved</option>
+                    <option value="Rejected" {% if request.GET.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-10">
+                <input type="text" name="search" class="form-control" placeholder="Search" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </div>
+    </form>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'student__username' %}order_by=-student__username{% else %}order_by=student__username{% endif %}">
+                        Student
+                        {% if request.GET.order_by == 'student__username' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-student__username' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'subject' %}order_by=-subject{% else %}order_by=subject{% endif %}">
+                        Subject
+                        {% if request.GET.order_by == 'subject' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-subject' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'date' %}order_by=-date{% else %}order_by=date{% endif %}">
+                        Date
+                        {% if request.GET.order_by == 'date' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-date' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'duration' %}order_by=-duration{% else %}order_by=duration{% endif %}">
+                        Duration
+                        {% if request.GET.order_by == 'duration' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-duration' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'tutor' %}order_by=-tutor{% else %}order_by=tutor{% endif %}">
+                        Tutor
+                        {% if request.GET.order_by == 'tutor' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-tutor' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'status' %}order_by=-status{% else %}order_by=status{% endif %}">
+                        Status
+                        {% if request.GET.order_by == 'status' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-status' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th><a href="{% url 'create_lesson' %}"><i class="fa-solid fa-plus fs-4"></i></a></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lesson in lessons %}
+            <tr>
+                <td>{{ lesson.student.username }}</td>
+                <td>{{ lesson.subject }}</td>
+                <td>{{ lesson.date }}</td>
+                <td>{{ lesson.duration }} mins</td>
+                <td>
+                    <form method="post" action="{% url 'assign_tutor' lesson.pk %}">
+                        {% csrf_token %}
+                        <select name="tutor" class="form-control custom-select" onchange="this.form.submit()" style="appearance: none;">
+                            <option value="" disabled selected>{{ lesson.tutor }}</option>
+                            {% for tutor in tutors %}
+                            <option value="{{ tutor.username }}" {% if lesson.tutor == tutor.username %}selected{% endif %}>{{ tutor.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </td>
+                <td>
+                    <form method="post" action="{% url 'approve_lesson' lesson.pk %}">
+                        {% csrf_token %}
+                        <select name="approve" class="form-control custom-select" onchange="this.form.submit()" style="appearance: none;">
+                            <option value="Pending" class="text-warning" {% if lesson.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Approved" class="text-success" {% if lesson.status == 'Approved' %}selected{% endif %}>Approved</option>
+                            <option value="Rejected" class="text-danger" {% if lesson.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                        </select>
+                    </form>
+                </td>
+                <td>
+                    <a href="{% url 'update_lesson' lesson.id %}"><i class="bi bi-pen-fill"></i></a>
+                    &nbsp;&nbsp; 
+                    <a href="{% url 'delete_lesson' lesson.id %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

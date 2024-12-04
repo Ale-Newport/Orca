@@ -16,7 +16,7 @@ user_fixtures = [
 class Command(BaseCommand):
     """Build automation command to seed the database."""
 
-    USER_COUNT = 300
+    USER_COUNT = 500
     DEFAULT_PASSWORD = 'Password123'
     help = 'Seeds the database with sample data'
 
@@ -48,7 +48,7 @@ class Command(BaseCommand):
         last_name = self.faker.last_name()
         email = create_email(first_name, last_name)
         username = create_username(first_name, last_name)
-        type = choices(['admin', 'tutor', 'student'], weights=[5, 25, 70], k=1)[0]
+        type = choices(['admin', 'tutor', 'student'], weights=[3, 12, 85], k=1)[0]
         self.create_user({'username': username, 'email': email, 'first_name': first_name, 'last_name': last_name, 'type': type})
 
     def create_user(self, data):
@@ -61,6 +61,8 @@ class Command(BaseCommand):
                 last_name=data['last_name'],
                 type=data['type']
             )
+            if data['type'] == 'tutor':
+                user.subjects.add(*choices(['Python', 'Java', 'C++', 'Scala', 'Web Development'], k=randint(1, 3)))
             if data['type'] == 'admin':
                 user.is_staff = True
                 user.is_superuser = True

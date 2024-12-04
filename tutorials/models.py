@@ -4,10 +4,14 @@ from django.db import models
 from libgravatar import Gravatar
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.utils.timezone import now
-from datetime import timedelta
-from decimal import Decimal
 
+SUBJECT_CHOICES = [
+    ('Python', 'Python'),
+    ('Java', 'Java'),
+    ('C++', 'C++'),
+    ('Scala', 'Scala'),
+    ('Web Development', 'Web Development'),
+]
 
 class User(AbstractUser):
     """Model used for user authentication, and team member related information."""
@@ -17,9 +21,7 @@ class User(AbstractUser):
         ('student', 'Student'),
     )
 
-    username = models.CharField(
-        max_length=30,
-        unique=True,
+    username = models.CharField(max_length=30, unique=True,
         validators=[RegexValidator(
             regex=r'^@\w{3,}$',
             message='Username must consist of @ followed by at least three alphanumericals'
@@ -29,6 +31,7 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=50, blank=False)
     email = models.EmailField(unique=True, blank=False)
     type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='student')
+    subjects = models.ManyToManyField('Subject', blank=True, related_name='tutors')
 
     class Meta:
         """Model options."""
@@ -49,6 +52,14 @@ class User(AbstractUser):
         return self.gravatar(size=60)
 
 
+class Subject(models.Model):
+    """Model representing a subject that can be taught by a tutor."""
+    name = models.CharField(max_length=100, unique=True, choices=SUBJECT_CHOICES)
+
+    def __str__(self):
+        return self.name
+
+
 class Lesson(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
@@ -57,13 +68,7 @@ class Lesson(models.Model):
     ]
 
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lessons")
-    subject = models.CharField(max_length=100, choices=[
-        ('Python', 'Python'),
-        ('Java', 'Java'),
-        ('C++', 'C++'),
-        ('Scala', 'Scala'),
-        ('Web Development', 'Web Development'),
-    ])
+    subject = models.CharField(max_length=100, choices=SUBJECT_CHOICES)
     date = models.DateTimeField()
     duration = models.PositiveIntegerField(validators=[MinValueValidator(30), MaxValueValidator(240)])
     tutor = models.CharField(max_length=100, default="Unknown Tutor")

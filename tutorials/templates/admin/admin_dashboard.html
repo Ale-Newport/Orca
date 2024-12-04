@@ -1,0 +1,41 @@
+{% extends 'base_content.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Hi, {{ user.first_name }}</h1>
+    
+    <div class="row mt-3">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100" onclick="location.href='{% url 'list_users' %}'" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <h3 class="card-title"><i class="fas fa-users"></i> Users</h3>
+                    <p class="card-text">Total Users: {{ total_users }}</p>
+                    <p class="card-text">Students: {{ student_users }}</p>
+                    <p class="card-text">Tutors: {{ tutor_users }}</p>
+                    <p class="card-text">Admins: {{ admin_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100" onclick="location.href='{% url 'list_lessons' %}'" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <h3 class="card-title"><i class="fas fa-book"></i> Lessons</h3>
+                    <p class="card-text">Total Lessons: {{ total_lessons }}</p>
+                    <p class="card-text">Approved Lessons: {{ approved_lessons }}</p>
+                    <p class="card-text">Pending Lessons: {{ pending_lessons }}</p>
+                    <p class="card-text">Rejected Lessons: {{ rejected_lessons }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100" onclick="location.href='{% url 'list_invoices' %}'" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <h3 class="card-title"><i class="fas fa-file-invoice-dollar"></i> Invoices</h3>
+                    <p class="card-text">Paid: {{ paid_invoices }} / {{ total_invoices }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

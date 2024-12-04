@@ -1,8 +1,8 @@
 <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
   <div class="container-fluid">
     <!-- Brand Logo -->
-    <a class="navbar-brand" href="{% if user.type == 'tutor' %}{% url 'tutor_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}">
-      <i class="fas fa-tasks"></i> Menu
+    <a class="navbar-brand" href="{% if user.type == 'admin' %}{% url 'admin_dashboard' %}{% elif user.type == 'tutor' %}{% url 'tutor_dashboard' %}{% else %}{% url 'student_dashboard' %}{% endif %}">
+      <i class="fas fa-tasks"></i> Dashboard
     </a>
 
     <!-- Toggler for Mobile -->
@@ -14,19 +14,40 @@
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
       <ul class="navbar-nav ms-auto">
         {% if user.is_authenticated %}
-          <!-- Main Links -->
+          <!-- Admin Links -->
+          {% if user.type == 'admin' %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'view_schedule' %}"><i class="fas fa-calendar-alt"></i> Schedule</a>
+            <a class="nav-link" href="{% url 'list_users' %}"><i class="fas fa-users"></i> Manage Users</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'view_upcoming_lessons' %}"><i class="fas fa-book"></i> Lessons</a>
+            <a class="nav-link" href="{% url 'list_lessons' %}"><i class="fas fa-book"></i> Manage Lessons</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'lesson_requests' %}"><i class="fas fa-book-open"></i> Requests</a>
+            <a class="nav-link" href="{% url 'list_invoices' %}"><i class="fas fa-file-invoice-dollar"></i> Manage Invoices</a>
+          </li>
+          <!-- Tutor Links -->
+          {% elif user.type == 'tutor' %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'tutor_schedule' %}"><i class="fas fa-calendar-alt"></i> Schedule</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'invoices' %}"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
+            <a class="nav-link" href="{% url 'choose_class' %}"><i class="fas fa-book"></i> Lessons</a>
           </li>
+          <!-- Student Links -->
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'student_schedule' %}"><i class="fas fa-calendar-alt"></i> Schedule</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'student_lessons' %}"><i class="fas fa-book"></i> Lessons</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'student_requests' %}"><i class="fas fa-hand-point-up"></i> Requests</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'student_invoices' %}"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
+          </li>
+          {% endif %}
           &nbsp;&nbsp;&nbsp;
 
           <!-- User Dropdown Menu -->
@@ -36,7 +57,6 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
               <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user"></i> Profile</a></li>
-              <li><a class="dropdown-item" href="{% url 'invoices' %}"><i class="fas fa-file-invoice-dollar"></i> Invoices</a></li>
               <li><a class="dropdown-item" href="{% url 'password' %}"><i class="fas fa-cog"></i> Settings</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item text-danger" href="{% url 'log_out' %}"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>

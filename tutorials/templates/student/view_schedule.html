@@ -1,0 +1,48 @@
+{% extends "base_content.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="text-center">Schedule for {{ month }}/{{ year }}</h1>
+
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{% url 'student_schedule' prev_year prev_month %}" class="btn btn-primary">Previous Month</a>
+        <a href="{% url 'student_schedule' next_year next_month %}" class="btn btn-primary">Next Month</a>
+    </div>
+
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>Sunday</th>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+                <th>Saturday</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in calendar %}
+            <tr>
+                {% for day in week %}
+                <td>
+                    {% if day %}
+                        <div class="day">{{ day.day }}</div>
+                        {% for lesson in day.lessons %}
+                            <div class="lesson">
+                                <strong>{{ lesson.subject }}</strong><br>
+                                Tutor: {{ lesson.tutor }}<br>
+                                Time: {{ lesson.date|time:"H:i" }}<br>
+                            </div>
+                            <hr>
+                        {% empty %}
+                        No lessons
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

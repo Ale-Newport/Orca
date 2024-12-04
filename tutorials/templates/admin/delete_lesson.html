@@ -1,0 +1,13 @@
+{% extends 'base_content.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Delete Lesson</h1>
+    <p>Are you sure you want to delete the lesson for {{ lesson.student.username }} on {{ lesson.date }}?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a href="{% url 'list_lessons' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
