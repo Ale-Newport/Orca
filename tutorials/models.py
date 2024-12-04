@@ -4,13 +4,17 @@ from django.db import models
 from libgravatar import Gravatar
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils.timezone import now
+from datetime import timedelta
+from decimal import Decimal
+from django.contrib.auth.models import User
 
 SUBJECT_CHOICES = [
-    ('Python', 'Python'),
-    ('Java', 'Java'),
-    ('C++', 'C++'),
-    ('Scala', 'Scala'),
-    ('Web Development', 'Web Development'),
+        ('Python', 'Python'),
+        ('Java', 'Java'),
+        ('C++', 'C++'),
+        ('Scala', 'Scala'),
+        ('Web Development', 'Web Development'),
 ]
 
 class User(AbstractUser):
@@ -58,6 +62,15 @@ class Subject(models.Model):
 
     def __str__(self):
         return self.name
+class Notification(models.Model):
+    """Model to store notifications for users."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notification for {self.user.username} - {'Read' if self.is_read else 'Unread'}"
 
 
 class Lesson(models.Model):
@@ -84,14 +97,41 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.subject} with {self.student.username} on {self.date}"
-    
-    
+
+
 class Invoice(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='invoices')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     issued_date = models.DateField(auto_now_add=True)
     due_date = models.DateField()
     paid = models.BooleanField(default=False)
+
     def __str__(self):
         status = "Paid" if self.paid else "Unpaid"
         return f"Invoice {self.id} for {self.student} - {status}"
+
+
+class tutorRequest(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
+
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tutor_requests")
+    subject = models.CharField(max_length=100, choices=SUBJECT_CHOICES)
+    date = models.DateTimeField()
+    duration = models.PositiveIntegerField(validators=[MinValueValidator(30), MaxValueValidator(240)])
+    tutor = models.CharField(max_length=100, default="Unknown Tutor")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    notes = models.TextField(blank=True, null=True)
+
+    def is_assigned(self):
+        """Return True if a tutor has been assigned."""
+        return self.tutor != "Unknown Tutor"
+
+    is_assigned.boolean = True  # Show as a boolean field in the admin interface
+    is_assigned.short_description = 'Assigned?'
+
+    def __str__(self):
+        return f"{self.subject} with {self.student.username} on {self.date}"

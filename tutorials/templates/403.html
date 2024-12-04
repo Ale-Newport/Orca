@@ -1,0 +1,9 @@
+{% extends 'base_content.html' %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h1>Access Denied</h1>
+    <p>{{ message }}</p>
+    <a href="{% url redirect_url %}" class="btn btn-primary">Return to Dashboard</a>
+</div>
+{% endblock %}

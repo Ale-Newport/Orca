@@ -9,8 +9,10 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadReque
 from decimal import Decimal
 from tutorials.forms import LessonRequestForm
 from django.urls import reverse
+from tutorials.decorators import user_type_required
 
 @login_required
+@user_type_required(['student'])
 def dashboard(request):
     """Display the student dashboard"""
     user = request.user

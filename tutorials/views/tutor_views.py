@@ -14,12 +14,12 @@ def dashboard(request):
         'user': user,
         'upcoming_lessons': upcoming_lessons,
     }
-    return render(request, 'tutor_dashboard.html', context)
+    return render(request, 'tutor/tutor_dashboard.html', context)
 
 @login_required
 def choose_class(request):
     lessons = Lesson.objects.filter(status='Pending').order_by('date')
-    return render(request, 'choose_class.html', {'lessons': lessons})
+    return render(request, 'tutor/choose_class.html', {'lessons': lessons})
 
 @login_required
 def tutor_schedule(request, year=None, month=None):
@@ -66,4 +66,4 @@ def tutor_schedule(request, year=None, month=None):
         "next_year": next_year,
     }
 
-    return render(request, 'tutor_schedule.html', context)
+    return render(request, 'tutor/tutor_schedule.html', context)

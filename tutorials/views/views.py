@@ -27,8 +27,13 @@ class LoginProhibitedMixin:
         return super().dispatch(*args, **kwargs)
 
     def handle_already_logged_in(self, *args, **kwargs):
-        url = self.get_redirect_when_logged_in_url()
-        return redirect(url)
+        user = self.request.user
+        if user.type == 'admin':
+            return redirect('admin:index')
+        elif user.type == 'tutor':
+            return redirect('tutor_dashboard')
+        else:
+            return redirect('dashboard')
 
     def get_redirect_when_logged_in_url(self):
         """Returns the url to redirect to when not logged in."""

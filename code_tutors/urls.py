@@ -66,6 +66,6 @@ urlpatterns = [
     path('admin/invoices/create/', admin_views.create_invoice, name='create_invoice'),
     path('admin/invoices/update/<int:pk>/', admin_views.update_invoice, name='update_invoice'),
     path('admin/invoices/delete/<int:pk>/', admin_views.delete_invoice, name='delete_invoice'),
-]
 
+]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
