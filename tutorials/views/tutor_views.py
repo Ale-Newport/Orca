@@ -9,6 +9,7 @@ from django.contrib import messages
 
 
 @login_required
+@user_type_required(['tutor'])
 def dashboard(request):
     user = request.user
     lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now(), status='Approved').order_by('date')[:5]
@@ -19,17 +20,20 @@ def dashboard(request):
     return render(request, 'tutor/tutor_dashboard.html', context)
 
 @login_required
+@user_type_required(['tutor'])
 def choose_class(request):
     lessons = Lesson.objects.filter(status='Pending').order_by('date')
     return render(request, 'tutor/choose_class.html', {'lessons': lessons})
 
 @login_required
+@user_type_required(['tutor'])
 def lessons(request):
     user = request.user
     lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now()).order_by('date')
     return render(request, 'tutor/tutor_lessons.html', {'lessons': lessons})
 
 @login_required
+@user_type_required(['tutor'])
 def schedule(request, year=None, month=None):
     user = request.user
      # Use current year and month if not provided

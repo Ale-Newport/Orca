@@ -8,6 +8,7 @@ from django.contrib import messages
 from datetime import datetime, timedelta
 
 @login_required
+@user_type_required(['admin'])
 def dashboard(request):
     """Display the admin dashboard"""
     total_users = User.objects.count()
@@ -54,6 +55,7 @@ def dashboard(request):
 
 # User views
 @login_required
+@user_type_required(['admin'])
 def list_users(request):
     users = User.objects.all()
 
@@ -82,6 +84,7 @@ def list_users(request):
     return render(request, 'admin/list_users.html', context)
 
 @login_required
+@user_type_required(['admin'])
 def create_user(request):
     if request.method == 'POST':
         form = UserFormAdmin(request.POST)
@@ -93,6 +96,7 @@ def create_user(request):
     return render(request, 'admin/create_user.html', {'form': form})
 
 @login_required
+@user_type_required(['admin'])
 def update_user(request, pk):
     user = get_object_or_404(User, pk=pk)
     if request.method == 'POST':
@@ -105,6 +109,7 @@ def update_user(request, pk):
     return render(request, 'admin/update_user.html', {'form': form})
 
 @login_required
+@user_type_required(['admin'])
 def delete_user(request, pk):
     user = get_object_or_404(User, pk=pk)
     if request.method == 'POST':
@@ -114,6 +119,7 @@ def delete_user(request, pk):
 
 # Lesson views
 @login_required
+@user_type_required(['admin'])
 def list_lessons(request):
     lessons = Lesson.objects.filter(date__gte=timezone.now())
 
@@ -154,6 +160,7 @@ def list_lessons(request):
     return render(request, 'admin/list_lessons.html', context)
 
 @login_required
+@user_type_required(['admin'])
 def create_lesson(request):
     if request.method == 'POST':
         form = LessonForm(request.POST)
@@ -186,6 +193,7 @@ def create_lesson(request):
     return render(request, 'admin/create_lesson.html', {'form': form})
 
 @login_required
+@user_type_required(['admin'])
 def update_lesson(request, pk):
     lesson = get_object_or_404(Lesson, pk=pk)
     if request.method == 'POST':
@@ -198,6 +206,7 @@ def update_lesson(request, pk):
     return render(request, 'admin/update_lesson.html', {'form': form})
 
 @login_required
+@user_type_required(['admin'])
 def update_lessons(request):
     if request.method == 'POST':
         for lesson in Lesson.objects.all():
@@ -224,6 +233,7 @@ def update_lessons(request):
     return redirect('list_lessons')
 
 @login_required
+@user_type_required(['admin'])
 def assign_tutor(request, pk):
     lesson = get_object_or_404(Lesson, pk=pk)
     if request.method == 'POST':
@@ -235,6 +245,7 @@ def assign_tutor(request, pk):
     return redirect('list_lessons')
 
 @login_required
+@user_type_required(['admin'])
 def approve_lesson(request, pk):
     lesson = get_object_or_404(Lesson, pk=pk)
     if request.method == 'POST':
@@ -249,6 +260,7 @@ def approve_lesson(request, pk):
     return redirect('list_lessons')
 
 @login_required
+@user_type_required(['admin'])
 def delete_lesson(request, pk):
     lesson = get_object_or_404(Lesson, pk=pk)
     if request.method == 'POST':
@@ -259,6 +271,7 @@ def delete_lesson(request, pk):
 
 # Invoice views
 @login_required
+@user_type_required(['admin'])
 def list_invoices(request):
     invoices = Invoice.objects.all()
 
@@ -292,6 +305,7 @@ def list_invoices(request):
     return render(request, 'admin/list_invoices.html', context)
 
 @login_required
+@user_type_required(['admin'])
 def create_invoice(request):
     if request.method == 'POST':
         form = InvoiceForm(request.POST)
@@ -303,6 +317,7 @@ def create_invoice(request):
     return render(request, 'admin/create_invoice.html', {'form': form})
 
 @login_required
+@user_type_required(['admin'])
 def update_invoice(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     if request.method == 'POST':
@@ -315,6 +330,7 @@ def update_invoice(request, pk):
     return render(request, 'admin/update_invoice.html', {'form': form})
 
 @login_required
+@user_type_required(['admin'])
 def delete_invoice(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     if request.method == 'POST':

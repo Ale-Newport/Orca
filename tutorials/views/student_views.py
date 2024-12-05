@@ -26,6 +26,7 @@ def dashboard(request):
     return render(request, 'student/dashboard.html', context)
 
 @login_required
+@user_type_required(['student'])
 def schedule(request, year=None, month=None):
     user = request.user
     # Use current year and month if not provided
@@ -64,6 +65,7 @@ def schedule(request, year=None, month=None):
     return render(request, 'student/view_schedule.html', context)
 
 @login_required
+@user_type_required(['student'])
 def requests(request):
     """View all requested lessons for the logged-in student."""
     user = request.user
@@ -79,6 +81,7 @@ def lessons(request):
 
 
 @login_required
+@user_type_required(['student'])
 def request_lesson(request):
     if request.method == 'POST':
         form = LessonRequestForm(request.POST)
@@ -145,6 +148,7 @@ def request_lesson(request):
 
 
 @login_required
+@user_type_required(['student'])
 def update_request(request, pk):
     """Update the details of an existing lesson."""
     lesson = get_object_or_404(Lesson, id=pk, student=request.user)
@@ -160,6 +164,7 @@ def update_request(request, pk):
 
 
 @login_required
+@user_type_required(['student'])
 def delete_request(request, pk):
     """Remove an existing lesson for the logged-in user."""
     lesson = get_object_or_404(Lesson, id=pk, student=request.user)
@@ -178,12 +183,14 @@ def delete_request(request, pk):
 
 
 @login_required
+@user_type_required(['student'])
 def invoices(request):
     """View all invoices for the logged-in student."""
     invoices = Invoice.objects.filter(student=request.user).order_by('-issued_date')
     return render(request, 'student/list_invoices.html', {'invoices': invoices})
 
 @login_required
+@user_type_required(['student'])
 def generate_invoice_for_lesson(lesson):
     """Generate an invoice for the given lesson."""
     amount = Decimal(lesson.duration * 1)  # Example: $1 per minute
