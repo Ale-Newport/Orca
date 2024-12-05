@@ -36,7 +36,7 @@ urlpatterns = [
     path('student/dashboard/', student_views.dashboard, name='student_dashboard'),
     path('student/lessons/', student_views.lessons, name='student_lessons'),
     path('student/schedule/', student_views.schedule, name='student_schedule'),
-    path('view_schedule/<int:year>/<int:month>/', student_views.schedule, name='student_schedule'),
+    path('student/schedule/<int:year>/<int:month>/', student_views.schedule, name='student_schedule'),
     path('student/requests/', student_views.requests, name='student_requests'),
     path('student/lesson/request/', student_views.request_lesson, name='request_lesson'),
     path('student/lesson/update/<int:pk>/', student_views.update_request, name='update_request'),
@@ -45,9 +45,10 @@ urlpatterns = [
 
     # Tutor
     path('tutor/dashboard/', tutor_views.dashboard, name='tutor_dashboard'),
-    path('tutor/choose_class/', tutor_views.choose_class, name= 'choose_class' ),
-    path('tutor/tutor_schedule/', tutor_views.tutor_schedule, name= 'tutor_schedule'),
-    path('tutor/tutor_schedule/<int:year>/<int:month>/', tutor_views.tutor_schedule, name= 'tutor_schedule'),
+    path('tutor/lessons/', tutor_views.lessons, name= 'tutor_lessons' ),
+    path('tutor/schedule/', tutor_views.schedule, name= 'tutor_schedule'),
+    path('tutor/schedule/<int:year>/<int:month>/', tutor_views.schedule, name= 'tutor_schedule'),
+    path('tutor/choose_class/', tutor_views.choose_class, name= 'choose_class'),
 
     # Admin
     path('admin/dashboard/', admin_views.dashboard, name='admin_dashboard'),

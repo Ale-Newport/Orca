@@ -52,7 +52,6 @@ def schedule(request, year=None, month=None):
         week.extend([None] * (7 - len(week)))
         calendar.append(week)
 
-    # Context data
     context = {
         "calendar": calendar,
         "month": month,

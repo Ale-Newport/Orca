@@ -173,7 +173,7 @@ class LessonForm(forms.ModelForm):
 
         return cleaned_data
 
-
+# User form
 class UserForm(forms.ModelForm):
     """Form to update user profiles."""
     class Meta:
@@ -181,7 +181,7 @@ class UserForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'type']
 
-
+# Invoice form
 class InvoiceForm(forms.ModelForm):
     student = forms.ModelChoiceField(queryset=User.objects.filter(type='student').order_by('username'), required=True)
     amount = forms.DecimalField(widget=forms.NumberInput(attrs={'min': 0, 'step': 0.50, 'placeholder': '£'}), max_digits=10, decimal_places=2, required=True)

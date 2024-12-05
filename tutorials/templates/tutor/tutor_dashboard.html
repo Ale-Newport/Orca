@@ -3,10 +3,7 @@
 {% block content %}
 <div class="container mt-5">
     <!-- Welcome Section -->
-    <div class="welcome-section text-center mb-5">
-        <h1 class="display-4">Welcome, {{ user.first_name }}!</h1>
-        <p class="lead">Your personalized dashboard to manage your lessons and view student enrollments.</p>
-    </div>
+    <h1 class="text-center mb-4">Hi, {{ user.first_name }}</h1>
 
     <!-- Cards Section -->
     <div class="row justify-content-center">
@@ -29,14 +26,14 @@
                     <i class="fas fa-book-reader fa-3x text-info mb-3"></i>
                     <h5 class="card-title">Upcoming Lessons</h5>
                     <p class="card-text">
-                        {% if upcoming_lessons %}
-                            You have {{ upcoming_lessons|length }} upcoming lessons. Stay prepared!
+                        {% if lessons %}
+                            You have {{ lessons|length }} upcoming lessons. Stay prepared!
                         {% else %}
-                            Click button to check all registered classes!
+                            No Upcomin Lessons, click to check all registered classes!
                         {% endif %}
                     </p>
                     <br>
-                    <a href="{% url 'choose_class' %}" class="btn btn-info">View Upcoming Lessons</a>
+                    <a href="{% url 'tutor_lessons' %}" class="btn btn-info">View Upcoming Lessons</a>
                 </div>
             </div>
         </div>

@@ -1,0 +1,40 @@
+{% extends 'base_content.html' %}
+
+{% block content %}
+
+<div class="container">
+    {% include "partials/messages.html" %}
+    <h1 class="mb-4 text-center">Lessons</h1>
+
+    {% if lessons %}
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Subject</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Duration</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lesson in lessons %}
+                <tr>
+                    <td>{{ lesson.student.full_name }}</td>
+                    <td>{{ lesson.subject }}</td>
+                    <td>{{ lesson.date|date:"D, d M Y" }}</td>
+                    <td>{{ lesson.date|date:"H:i" }}</td>
+                    <td>{{ lesson.duration }} minutes</td>
+                    <td class="{% if lesson.status == 'approved' %}text-success{% elif lesson.status == 'pending' %}text-warning{% elif lesson.status == 'rejected' %}text-danger{% endif %}">
+                        {{ lesson.status }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No lessons found.</p>
+    {% endif %}
+</div>
+{% endblock %}
