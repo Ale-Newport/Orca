@@ -9,35 +9,41 @@
     </div>
 
     <!-- Calendar Table -->
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover text-center">
-            <thead class="thead-light">
-                <tr>
-                    <th>Day</th>
-                    <th>Lessons</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for day in calendar %}
-                <tr>
-                    <td><strong>{{ day.day }}</strong></td>
-                    <td>
-                        {% if day.lessons %}
-                            {% for lesson in day.lessons %}
-                                <div class="lesson mb-3">
-                                    <strong>{{ lesson.subject }}</strong><br>
-                                    <span>Time: {{ lesson.date|time:"H:i" }}</span>
-                                </div>
-                                <hr class="my-2">
-                            {% endfor %}
-                        {% else %}
-                            <span>No lessons</span>
-                        {% endif %}
-                    </td>
-                </tr>
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>Sunday</th>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+                <th>Saturday</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in calendar %}
+            <tr>
+                {% for day in week %}
+                <td>
+                    {% if day %}
+                        <div class="day">{{ day.day }}</div>
+                        {% for lesson in day.lessons %}
+                            <div class="lesson">
+                                <strong>{{ lesson.subject }}</strong><br>
+                                Tutor: {{ lesson.tutor }}<br>
+                                Time: {{ lesson.date|time:"H:i" }}<br>
+                            </div>
+                            <hr>
+                        {% empty %}
+                        No lessons
+                        {% endfor %}
+                    {% endif %}
+                </td>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
