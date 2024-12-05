@@ -48,7 +48,6 @@ urlpatterns = [
     path('tutor/lessons/', tutor_views.lessons, name= 'tutor_lessons' ),
     path('tutor/schedule/', tutor_views.schedule, name= 'tutor_schedule'),
     path('tutor/schedule/<int:year>/<int:month>/', tutor_views.schedule, name= 'tutor_schedule'),
-    path('tutor/choose_class/', tutor_views.choose_class, name= 'choose_class'),
 
     # Admin
     path('admin/dashboard/', admin_views.dashboard, name='admin_dashboard'),
