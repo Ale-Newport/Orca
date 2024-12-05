@@ -6,21 +6,21 @@
     <h1 class="text-center mb-4">Hi, {{ user.first_name }}</h1>
 
     <!-- Cards Section -->
-    <div class="row justify-content-center">
+    <div class="row mt-3 justify-content-center card-deck">
         <!-- My Schedule Section -->
-        <div class="col-md-6 col-lg-4 mb-3">
+        <div class="col-md-6 col-lg-4 mb-4">
             <div class="card shadow-sm border-info">
                 <div class="card-body text-center">
                     <i class="fas fa-calendar-alt fa-3x text-info mb-3"></i>
                     <h5 class="card-title">View My Schedule</h5>
-                    <p class="card-text">Keep track of your upcoming lessons and commitments.</p>
+                    <p class="card-text">Keep track of your upcoming lessons.</p>
                     <a href="{% url 'tutor_schedule' %}" class="btn btn-info">View My Schedule</a>
                 </div>
             </div>
         </div>
 
         <!-- Upcoming Lessons Section -->
-        <div class="col-md-6 col-lg-4 mb-3">
+        <div class="col-md-6 col-lg-4 mb-4">
             <div class="card shadow-sm border-info">
                 <div class="card-body text-center">
                     <i class="fas fa-book-reader fa-3x text-info mb-3"></i>
@@ -32,8 +32,19 @@
                             No Upcomin Lessons, click to check all registered classes!
                         {% endif %}
                     </p>
-                    <br>
                     <a href="{% url 'tutor_lessons' %}" class="btn btn-info">View Upcoming Lessons</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Lessons Section -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-book-reader fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">Choose Lessons</h5>
+                    <p class="card-text">Click here to choose your lessons.</p>
+                    <a href="{% url 'choose_class' %}" class="btn btn-info">Choose Lessons</a>
                 </div>
             </div>
         </div>
