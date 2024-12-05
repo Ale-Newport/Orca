@@ -31,7 +31,10 @@
             <a class="nav-link" href="{% url 'tutor_schedule' %}"><i class="fas fa-calendar-alt"></i> Schedule</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'choose_class' %}"><i class="fas fa-book"></i> Lessons</a>
+            <a class="nav-link" href="{% url 'tutor_lessons' %}"><i class="fas fa-book"></i> Lessons</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'choose_class' %}"><i class="fa fa-clipboard-check"></i> Choose Lessons</a>
           </li>
           <!-- Student Links -->
           {% else %}

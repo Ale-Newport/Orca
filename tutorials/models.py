@@ -58,10 +58,11 @@ class User(AbstractUser):
 
 class Subject(models.Model):
     """Model representing a subject that can be taught by a tutor."""
-    name = models.CharField(max_length=100, unique=True, choices=SUBJECT_CHOICES)
+    name = models.CharField(max_length=100, choices=SUBJECT_CHOICES)
 
     def __str__(self):
         return self.name
+
 class Notification(models.Model):
     """Model to store notifications for users."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')

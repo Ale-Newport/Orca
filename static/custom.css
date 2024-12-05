@@ -16,6 +16,10 @@ h1, h2 {
   padding: 15px;
 }
 
+.card-deck {
+  display: flex;
+  flex-wrap: wrap;
+}
 .card {
   display: flex;
   flex-direction: column;

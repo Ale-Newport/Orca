@@ -11,10 +11,10 @@ from django.contrib import messages
 @login_required
 def dashboard(request):
     user = request.user
-    upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now()).order_by('date')[:5]
+    lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now(), status='Approved').order_by('date')[:5]
     context = {
         'user': user,
-        'upcoming_lessons': upcoming_lessons,
+        'lessons': lessons,
     }
     return render(request, 'tutor/tutor_dashboard.html', context)
 
@@ -24,13 +24,22 @@ def choose_class(request):
     return render(request, 'tutor/choose_class.html', {'lessons': lessons})
 
 @login_required
-def tutor_schedule(request, year=None, month=None):
+def lessons(request):
     user = request.user
+    lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now()).order_by('date')
+    return render(request, 'tutor/tutor_lessons.html', {'lessons': lessons})
+
+@login_required
+def schedule(request, year=None, month=None):
+    user = request.user
+     # Use current year and month if not provided
     today = datetime.today()
     year = year or today.year
     month = month or today.month
-    lessons = Lesson.objects.filter(student=user, date__year=year, date__month=month)
+    # Get lessons for the given month
+    lessons = Lesson.objects.filter(tutor=user, date__year=year, date__month=month)
 
+    # Generate calendar structure
     days_in_month = monthrange(year, month)[1]
     first_day_of_month = datetime(year, month, 1).weekday()
     calendar = []

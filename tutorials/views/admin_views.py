@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from tutorials.models import Lesson, Invoice, User
-from tutorials.forms import UserForm, LessonForm, InvoiceForm
+from tutorials.forms import UserFormAdmin, LessonForm, InvoiceForm
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib import messages
@@ -84,24 +84,24 @@ def list_users(request):
 @login_required
 def create_user(request):
     if request.method == 'POST':
-        form = UserForm(request.POST)
+        form = UserFormAdmin(request.POST)
         if form.is_valid():
             form.save()
             return redirect('list_users')
     else:
-        form = UserForm()
+        form = UserFormAdmin()
     return render(request, 'admin/create_user.html', {'form': form})
 
 @login_required
 def update_user(request, pk):
     user = get_object_or_404(User, pk=pk)
     if request.method == 'POST':
-        form = UserForm(request.POST, instance=user)
+        form = UserFormAdmin(request.POST, instance=user)
         if form.is_valid():
             form.save()
             return redirect('list_users')
     else:
-        form = UserForm(instance=user)
+        form = UserFormAdmin(instance=user)
     return render(request, 'admin/update_user.html', {'form': form})
 
 @login_required
