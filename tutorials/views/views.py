@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
-from tutorials.forms import LogInForm, PasswordForm, UserForm, SignUpForm
+from tutorials.forms import LogInForm, PasswordForm, SignUpForm, UserForm, UserFormAdmin, UserFormTutor
 from tutorials.helpers import login_prohibited
 
 @login_prohibited
@@ -78,9 +78,15 @@ class PasswordView(LoginRequiredMixin, FormView):
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     """Display user profile editing screen, and handle profile modifications."""
 
-    model = UserForm
     template_name = "profile.html"
-    form_class = UserForm
+
+    def get_form_class(self):
+        """Return the form class based on the user type."""
+        user = self.request.user
+        if user.type == 'tutor':
+            return UserFormTutor
+        else:
+            return UserForm
 
     def get_object(self):
         """Return the object (user) to be updated."""

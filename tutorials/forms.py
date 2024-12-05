@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
-from .models import User, Lesson, Invoice
+from .models import User, Lesson, Invoice, Subject
 from datetime import datetime, time, timedelta
 
 # Profile forms
@@ -175,14 +175,31 @@ class LessonForm(forms.ModelForm):
 
 # User form
 class UserForm(forms.ModelForm):
-    """Form to update user profiles."""
+    """Form to update one's user profile."""
+    class Meta:
+        """Form options."""
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email']
+
+class UserFormAdmin(forms.ModelForm):
+    """Form to update or create user profiles."""
     class Meta:
         """Form options."""
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'type']
 
+class UserFormTutor(forms.ModelForm):
+    """Form to update one's user profile being a tutor."""
+    subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.order_by('name'), required=False)
+    
+    class Meta:
+        """Form options."""
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email', 'subjects']
+
 # Invoice form
 class InvoiceForm(forms.ModelForm):
+    """Form to update user profiles."""
     student = forms.ModelChoiceField(queryset=User.objects.filter(type='student').order_by('username'), required=True)
     amount = forms.DecimalField(widget=forms.NumberInput(attrs={'min': 0, 'step': 0.50, 'placeholder': '£'}), max_digits=10, decimal_places=2, required=True)
     due_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
