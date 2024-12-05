@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.contrib import messages
 from datetime import datetime, timedelta
+from tutorials.decorators import user_type_required
 
 @login_required
 @user_type_required(['admin'])

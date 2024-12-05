@@ -6,6 +6,7 @@ from tutorials.models import Lesson, Invoice
 from calendar import monthrange
 from datetime import datetime, timedelta
 from django.contrib import messages
+from tutorials.decorators import user_type_required
 
 
 @login_required
