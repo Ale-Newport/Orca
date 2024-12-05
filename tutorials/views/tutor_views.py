@@ -19,11 +19,6 @@ def dashboard(request):
     }
     return render(request, 'tutor/tutor_dashboard.html', context)
 
-@login_required
-@user_type_required(['tutor'])
-def choose_class(request):
-    lessons = Lesson.objects.filter(status='Pending').order_by('date')
-    return render(request, 'tutor/choose_class.html', {'lessons': lessons})
 
 @login_required
 @user_type_required(['tutor'])

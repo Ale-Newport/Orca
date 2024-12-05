@@ -10,6 +10,10 @@ from decimal import Decimal
 from tutorials.forms import LessonRequestForm
 from django.urls import reverse
 from tutorials.decorators import user_type_required
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.utils.timezone import now
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin.models import LogEntry
 
 @login_required
 @user_type_required(['student'])
@@ -200,3 +204,39 @@ def generate_invoice_for_lesson(lesson):
         amount=amount,
         due_date=due_date
     )
+
+@login_required
+def update_admin_class_list(request):
+    """Handle selected classes and list them in the admin page for review."""
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('selected_classes')
+        if not selected_ids:
+            messages.error(request, 'Please select at least one class to proceed.')
+            return redirect('choose_class')
+        
+        try:
+            # Filter lessons based on selected IDs
+            selected_lessons = Lesson.objects.filter(id__in=selected_ids)
+            for lesson in selected_lessons:
+                # Update lesson status to "Under Review" (optional, based on your needs)
+                lesson.status = 'Under Review'
+                lesson.save()
+
+                # Log the change in the admin system
+                LogEntry.objects.log_action(
+                    user_id=request.user.id,
+                    content_type_id=ContentType.objects.get_for_model(lesson).pk,
+                    object_id=lesson.id,
+                    object_repr=str(lesson),
+                    action_flag=ADDITION,
+                    change_message=f"Class {lesson.subject} added to admin review."
+                )
+
+            messages.success(request, 'Selected classes have been sent to the admin page for review.')
+            return redirect('choose_class')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+            return redirect('choose_class')
+
+    # Redirect if accessed via GET
+    return redirect('choose_class')
