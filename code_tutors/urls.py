@@ -31,6 +31,8 @@ urlpatterns = [
     path('password/', views.PasswordView.as_view(), name='password'),
     path('profile/', views.ProfileUpdateView.as_view(), name='profile'),
     path('sign_up/', views.SignUpView.as_view(), name='sign_up'),
+    path('user/notifications/', views.notifications, name='notifications'),
+    path('user/notifications/mark_read/<int:pk>/', views.mark_notification_read, name='mark_notification_read'),
 
     # Student
     path('student/dashboard/', student_views.dashboard, name='student_dashboard'),
@@ -58,14 +60,14 @@ urlpatterns = [
     path('admin/lessons/', admin_views.list_lessons, name='list_lessons'),
     path('admin/lessons/create/', admin_views.create_lesson, name='create_lesson'),
     path('admin/lessons/update/<int:pk>/', admin_views.update_lesson, name='update_lesson'),
-    path('admin/lessons/update/', admin_views.update_lessons, name='update_lessons'),
-    path('admin/lessons/assign_tutor/<int:pk>/', admin_views.assign_tutor, name='assign_tutor'),
-    path('admin/lessons/approve_lesson/<int:pk>/', admin_views.approve_lesson, name='approve_lesson'),
     path('admin/lessons/delete/<int:pk>/', admin_views.delete_lesson, name='delete_lesson'),
     path('admin/invoices/', admin_views.list_invoices, name='list_invoices'),
     path('admin/invoices/create/', admin_views.create_invoice, name='create_invoice'),
     path('admin/invoices/update/<int:pk>/', admin_views.update_invoice, name='update_invoice'),
     path('admin/invoices/delete/<int:pk>/', admin_views.delete_invoice, name='delete_invoice'),
+    path('admin/notifications/', admin_views.list_notifications, name='list_notifications'),
+    path('admin/notifications/create/', admin_views.create_notification, name='create_notification'),
+    path('admin/notifications/delete/<int:pk>/', admin_views.delete_notification, name='delete_notification'),
 
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

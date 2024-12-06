@@ -1,0 +1,101 @@
+{% extends 'base_content.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Notifications</h1>
+
+    <!-- Filter, Search, and Order Form -->
+    <form method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-2">
+                <select name="is_read" class="form-control">
+                    <option value="">All Statuses</option>
+                    <option value="True" {% if request.GET.is_read == 'True' %}selected{% endif %}>Read</option>
+                    <option value="False" {% if request.GET.is_read == 'False' %}selected{% endif %}>Unread</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="user" class="form-control">
+                    <option value="">All Users</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}" {% if request.GET.user == user.id|stringformat:"s" %}selected{% endif %}>{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </div>
+    </form>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'user__username' %}order_by=-user__username{% else %}order_by=user__username{% endif %}">
+                        User
+                        {% if request.GET.order_by == 'user__username' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-user__username' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'message' %}order_by=-message{% else %}order_by=message{% endif %}">
+                        Message
+                        {% if request.GET.order_by == 'message' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-message' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'created_at' %}order_by=-created_at{% else %}order_by=created_at{% endif %}">
+                        Issued Date
+                        {% if request.GET.order_by == 'created_at' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-created_at' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'is_read' %}order_by=-is_read{% else %}order_by=is_read{% endif %}">
+                        Read
+                        {% if request.GET.order_by == 'is_read' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-is_read' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th><a href="{% url 'create_notification' %}" class="fa-solid fa-plus fs-4 text-decoration-none"></a></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for notification in notifications %}
+            <tr>
+                <td>{{ notification.user.username }}</td>
+                <td>{{ notification.message }}</td>
+                <td>{{ notification.created_at }}</td>
+                <td>
+                    {% if notification.is_read %}
+                    <span class="badge bg-success">Read</span>
+                    {% else %}
+                    <span class="badge bg-danger">Unread</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'delete_notification' notification.pk %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

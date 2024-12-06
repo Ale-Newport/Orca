@@ -1,7 +1,5 @@
 from django.contrib import admin
-from .models import User, Lesson, Invoice, tutorRequest
-from django.contrib import admin
-from .models import Lesson
+from .models import User, Lesson, Invoice
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
@@ -9,17 +7,6 @@ class LessonAdmin(admin.ModelAdmin):
     list_filter = ('status', 'subject', 'date', 'tutor')
     search_fields = ('student__username', 'subject', 'tutor')
     ordering = ('-date',)
-    actions = ['approve_lessons', 'reject_lessons']
-
-    @admin.action(description='Approve selected lessons')
-    def approve_lessons(self, request, queryset):
-        queryset.update(status='Approved', tutor='Assigned Tutor')
-        self.message_user(request, f"{queryset.count()} lessons approved.")
-
-    @admin.action(description='Reject selected lessons')
-    def reject_lessons(self, request, queryset):
-        queryset.update(status='Rejected')
-        self.message_user(request, f"{queryset.count()} lessons rejected.")
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
@@ -34,10 +21,3 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ('type',)
     search_fields = ('username', 'email', 'first_name', 'last_name')
     ordering = ('username',)
-
-@admin.register(tutorRequest)
-class tutorAdmin(admin.ModelAdmin):
-    list_display = ('student', 'subject', 'date', 'duration', 'tutor')
-    list_filter = ('tutor',)
-    search_fields = ('student',)
-    ordering = ('-date',)

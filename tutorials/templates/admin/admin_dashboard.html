@@ -35,6 +35,14 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100" onclick="location.href='{% url 'list_notifications' %}'" style="cursor: pointer;">
+                <div class="card-body text-center">
+                    <h3 class="card-title"><i class="fa fa-comments"></i> Notifications</h3>
+                    <p class="card-text">Read: {{ read_notifications }} / {{ total_notifications }}</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

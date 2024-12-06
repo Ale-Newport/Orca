@@ -33,6 +33,9 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'tutor_lessons' %}"><i class="fas fa-book"></i> Lessons</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'notifications' %}"><i class="fa-solid fa-comments"></i> Notifications</a>
+          </li>
           <!-- Student Links -->
           {% else %}
           <li class="nav-item">
@@ -46,6 +49,9 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'student_invoices' %}"><i class="fas fa-file-invoice-dollar"></i> Invoices</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'notifications' %}"><i class="fa-solid fa-comments"></i> Notifications</a>
           </li>
           {% endif %}
           &nbsp;&nbsp;&nbsp;

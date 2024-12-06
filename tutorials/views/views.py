@@ -3,11 +3,12 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
 from tutorials.forms import LogInForm, PasswordForm, SignUpForm, UserForm, UserFormAdmin, UserFormTutor
+from tutorials.models import Notification
 from tutorials.helpers import login_prohibited
 
 @login_prohibited
@@ -165,3 +166,17 @@ def log_out(request):
     """Log out the current user"""
     logout(request)
     return redirect('home')
+
+
+@login_required
+def notifications(request):
+    """View all notifications for the logged-in student."""
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'student/list_notifications.html', {'notifications': notifications})
+
+@login_required
+def mark_notification_read(request, pk):
+    notification = get_object_or_404(Notification, id=pk)
+    notification.is_read = not notification.is_read
+    notification.save()
+    return redirect('notifications')

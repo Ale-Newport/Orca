@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from tutorials.models import Lesson, Invoice, User
-from tutorials.forms import UserFormAdmin, LessonForm, InvoiceForm
+from tutorials.models import Lesson, Invoice, User, Notification
+from tutorials.forms import UserFormAdmin, LessonForm, InvoiceForm, NotificationForm
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib import messages
@@ -23,14 +23,9 @@ def dashboard(request):
     total_invoices = Invoice.objects.count()
     paid_invoices = Invoice.objects.filter(paid=True).count()
     unpaid_invoices = Invoice.objects.filter(paid=False).count()
-
-    student_users_percentage = (student_users / total_users * 100) if total_users > 0 else 0
-    tutor_users_percentage = (tutor_users / total_users * 100) if total_users > 0 else 0
-    admin_users_percentage = (admin_users / total_users * 100) if total_users > 0 else 0
-    approved_lessons_percentage = (approved_lessons / total_lessons * 100) if total_lessons > 0 else 0
-    pending_lessons_percentage = (pending_lessons / total_lessons * 100) if total_lessons > 0 else 0
-    rejected_lessons_percentage = (rejected_lessons / total_lessons * 100) if total_lessons > 0 else 0
-    paid_invoices_percentage = (paid_invoices / total_invoices * 100) if total_invoices > 0 else 0
+    total_notifications = Notification.objects.count()
+    read_notifications = Notification.objects.filter(is_read=True).count()
+    unread_notifications = Notification.objects.filter(is_read=False).count()
 
     context = {
         'total_users': total_users,
@@ -44,13 +39,9 @@ def dashboard(request):
         'total_invoices': total_invoices,
         'unpaid_invoices': unpaid_invoices,
         'paid_invoices': paid_invoices,
-        'student_users_percentage': student_users_percentage,
-        'tutor_users_percentage': tutor_users_percentage,
-        'admin_users_percentage': admin_users_percentage,
-        'approved_lessons_percentage': approved_lessons_percentage,
-        'pending_lessons_percentage': pending_lessons_percentage,
-        'rejected_lessons_percentage': rejected_lessons_percentage,
-        'paid_invoices_percentage': paid_invoices_percentage,
+        'total_notifications': total_notifications,
+        'read_notifications': read_notifications,
+        'unread_notifications': unread_notifications,
     }
     return render(request, 'admin/admin_dashboard.html', context)
 
@@ -73,13 +64,9 @@ def list_users(request):
     order_by = request.GET.get('order_by', 'username')
     users = users.order_by(order_by)
 
-    # Get distinct values for dropdowns
-    user_types = User.objects.values_list('type', flat=True).distinct()
-
     context = {
         'users': users,
         'order_by': order_by,
-        'user_types': user_types,
     }
 
     return render(request, 'admin/list_users.html', context)
@@ -150,11 +137,12 @@ def list_lessons(request):
 
     # Get values for dropdowns
     students = User.objects.filter(type='student').distinct()
-    students_with_lessons = Lesson.objects.values_list('student', flat=True).distinct()
-    subjects = Lesson.objects.values_list('subject', flat=True).distinct()
+    students_with_lessons = Lesson.objects.filter(date__gte=timezone.now()).values_list('student', flat=True).distinct()
+    students_with_lessons = User.objects.filter(id__in=students_with_lessons)
+    subjects = Lesson.objects.filter(date__gte=timezone.now()).values_list('subject', flat=True).distinct()
     tutors = User.objects.filter(type='tutor').distinct()
-    tutors_with_lessons = Lesson.objects.values_list('tutor', flat=True).distinct()
-    durations = Lesson.objects.values_list('duration', flat=True).distinct()
+    tutors_with_lessons = Lesson.objects.filter(date__gte=timezone.now()).values_list('tutor', flat=True).distinct()
+    durations = Lesson.objects.filter(date__gte=timezone.now()).values_list('duration', flat=True).distinct()
     
     context = {'lessons': lessons, 'order_by': order_by, 'students': students, 'students_with_lessons': students_with_lessons, 'subjects': subjects, 'tutors': tutors, 'tutors_with_lessons': tutors_with_lessons, 'durations': durations}
 
@@ -208,60 +196,6 @@ def update_lesson(request, pk):
 
 @login_required
 @user_type_required(['admin'])
-def update_lessons(request):
-    if request.method == 'POST':
-        for lesson in Lesson.objects.all():
-            tutor_username = request.POST.get(f'tutor_{lesson.pk}')
-            approve = request.POST.get(f'approve_{lesson.pk}')
-            delete = request.POST.get(f'delete_{lesson.pk}')
-
-            if delete:
-                lesson.delete()
-                continue
-
-            if tutor_username:
-                tutor = User.objects.filter(username=tutor_username).first()
-                if tutor:
-                    lesson.tutor = tutor.username
-
-            if approve:
-                lesson.status = 'Approved'
-            else:
-                lesson.status = 'Pending'
-
-            lesson.save()
-
-    return redirect('list_lessons')
-
-@login_required
-@user_type_required(['admin'])
-def assign_tutor(request, pk):
-    lesson = get_object_or_404(Lesson, pk=pk)
-    if request.method == 'POST':
-        tutor_username = request.POST.get('tutor')
-        tutor = User.objects.filter(username=tutor_username).first()
-        if tutor:
-            lesson.tutor = tutor.username
-            lesson.save()
-    return redirect('list_lessons')
-
-@login_required
-@user_type_required(['admin'])
-def approve_lesson(request, pk):
-    lesson = get_object_or_404(Lesson, pk=pk)
-    if request.method == 'POST':
-        approve = request.POST.get('approve')
-        if approve == 'Approved':
-            lesson.status = 'Approved'
-        elif approve == 'Rejected':
-            lesson.status = 'Rejected'
-        else:
-            lesson.status = 'Pending'
-        lesson.save()
-    return redirect('list_lessons')
-
-@login_required
-@user_type_required(['admin'])
 def delete_lesson(request, pk):
     lesson = get_object_or_404(Lesson, pk=pk)
     if request.method == 'POST':
@@ -280,10 +214,8 @@ def list_invoices(request):
     paid_filter = request.GET.get('paid')
     student_filter = request.GET.get('student')
 
-    if paid_filter:
-        invoices = invoices.filter(paid=(paid_filter == 'True'))
-    if student_filter:
-        invoices = invoices.filter(student__id=student_filter)
+    if paid_filter: invoices = invoices.filter(paid=(paid_filter == 'True'))
+    if student_filter: invoices = invoices.filter(student__id=student_filter)
 
     # Searching
     search_query = request.GET.get('search')
@@ -295,7 +227,8 @@ def list_invoices(request):
     invoices = invoices.order_by(order_by)
 
     # Get distinct values for dropdowns
-    students = User.objects.filter(type='student').distinct()
+    students = Invoice.objects.values_list('student', flat=True).distinct()
+    students = User.objects.filter(id__in=students)
 
     context = {
         'invoices': invoices,
@@ -338,3 +271,59 @@ def delete_invoice(request, pk):
         invoice.delete()
         return redirect('list_invoices')
     return render(request, 'admin/delete_invoice.html', {'invoice': invoice})
+
+
+# Notification views
+@login_required
+@user_type_required(['admin'])
+def list_notifications(request):
+    notifications = Notification.objects.all()
+
+    # Filtering
+    status_filter = request.GET.get('is_read')
+    user_filter = request.GET.get('user')
+
+    if status_filter: notifications = notifications.filter(is_read=status_filter)
+    if user_filter: notifications = notifications.filter(user__id=user_filter)
+
+    # Searching
+    search_query = request.GET.get('search')
+    if search_query:
+        notifications = notifications.filter(Q(user__username__icontains=search_query) | Q(message__icontains=search_query))
+
+    # Ordering
+    order_by = request.GET.get('order_by', 'created_at')
+    notifications = notifications.order_by(order_by)
+
+    # Get distinct values for dropdowns
+    users = Notification.objects.values_list('user', flat=True).distinct()
+    users = User.objects.filter(id__in=users)
+
+    context = {
+        'notifications': notifications,
+        'order_by': order_by,
+        'users': users,
+    }
+
+    return render(request, 'admin/list_notifications.html', context)
+
+@login_required
+@user_type_required(['admin'])
+def create_notification(request):
+    if request.method == 'POST':
+        form = NotificationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('list_notifications')
+    else:
+        form = NotificationForm()
+    return render(request, 'admin/create_notification.html', {'form': form})
+
+@login_required
+@user_type_required(['admin'])
+def delete_notification(request, pk):
+    notification = get_object_or_404(Notification, pk=pk)
+    if request.method == 'POST':
+        notification.delete()
+        return redirect('list_notifications')
+    return render(request, 'admin/delete_notification.html', {'notification': notification})

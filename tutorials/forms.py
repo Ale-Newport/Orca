@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
-from .models import User, Lesson, Invoice, Subject
+from .models import User, Lesson, Invoice, Subject, Notification
 from datetime import datetime, time, timedelta
 
 # Profile forms
@@ -98,12 +98,11 @@ class LessonRequestForm(forms.ModelForm):
     preferred_date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={'type':'datetime-local'}), required=True)
     duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15, 'min': 30, 'max': 240}), required=True)
     recurrence = forms.ChoiceField(choices=[('None', 'None'), ('Daily', 'Daily'), ('Weekly', 'Weekly'), ('Monthly', 'Monthly')], required=False)
-    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
-    notes = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=False)
+    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date-local'}), required=False)
 
     class Meta:
         model = Lesson
-        fields = ['subject', 'preferred_date', 'duration', 'recurrence', 'end_date', 'notes']
+        fields = ['subject', 'preferred_date', 'duration', 'recurrence', 'end_date']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -148,7 +147,7 @@ class LessonForm(forms.ModelForm):
 
     class Meta:
         model = Lesson
-        fields = ['student', 'subject', 'tutor', 'date', 'duration', 'notes']
+        fields = ['student', 'tutor', 'subject', 'date', 'duration', 'notes']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -221,5 +220,25 @@ class InvoiceForm(forms.ModelForm):
         # Ensure due_date is in the future
         if due_date and due_date < datetime.now().date():
             self.add_error('due_date', 'The due date must be in the future.')
+
+        return cleaned_data
+
+# Notification form
+class NotificationForm(forms.ModelForm):
+    """Form to create notifications."""
+    user = forms.ModelChoiceField(queryset=User.objects.all().order_by('username'), required=True)
+    message = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=True)
+
+    class Meta:
+        model = Notification
+        fields = ['user', 'message']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        message = cleaned_data.get('message')
+
+        # Ensure the message is not empty
+        if not message:
+            self.add_error('message', 'The message cannot be empty.')
 
         return cleaned_data

@@ -26,7 +26,7 @@
             <div class="col-md-2">
                 <select name="tutor" class="form-control">
                     <option value="">All Tutors</option>
-                    {% for tutor in tutors %}
+                    {% for tutor in tutors_with_lessons %}
                     <option value="{{ tutor }}" {% if request.GET.tutor == tutor %}selected{% endif %}>{{ tutor }}</option>
                     {% endfor %}
                 </select>
@@ -134,26 +134,15 @@
                 <td>{{ lesson.subject }}</td>
                 <td>{{ lesson.date }}</td>
                 <td>{{ lesson.duration }} mins</td>
+                <td>{{ lesson.tutor }}</td>
                 <td>
-                    <form method="post" action="{% url 'assign_tutor' lesson.pk %}">
-                        {% csrf_token %}
-                        <select name="tutor" class="form-control custom-select" onchange="this.form.submit()" style="appearance: none;">
-                            <option value="" disabled selected>{{ lesson.tutor }}</option>
-                            {% for tutor in tutors %}
-                            <option value="{{ tutor.username }}" {% if lesson.tutor == tutor.username %}selected{% endif %}>{{ tutor.username }}</option>
-                            {% endfor %}
-                        </select>
-                    </form>
-                </td>
-                <td>
-                    <form method="post" action="{% url 'approve_lesson' lesson.pk %}">
-                        {% csrf_token %}
-                        <select name="approve" class="form-control custom-select" onchange="this.form.submit()" style="appearance: none;">
-                            <option value="Pending" class="text-warning" {% if lesson.status == 'Pending' %}selected{% endif %}>Pending</option>
-                            <option value="Approved" class="text-success" {% if lesson.status == 'Approved' %}selected{% endif %}>Approved</option>
-                            <option value="Rejected" class="text-danger" {% if lesson.status == 'Rejected' %}selected{% endif %}>Rejected</option>
-                        </select>
-                    </form>
+                    {% if lesson.status == 'approved' %}
+                    <span class="badge bg-success">Approced</span>
+                    {% elif lesson.status == 'pending' %}
+                    <span class="badge bg-warning">Pending</span>
+                    {% else %}
+                    <span class="badge bg-danger">Rejected</span>
+                    {% endif %}
                 </td>
                 <td>
                     <a href="{% url 'update_lesson' lesson.id %}"><i class="bi bi-pen-fill"></i></a>
