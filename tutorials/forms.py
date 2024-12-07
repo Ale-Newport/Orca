@@ -70,24 +70,28 @@ class PasswordForm(NewPasswordMixin):
 
 class SignUpForm(NewPasswordMixin, forms.ModelForm):
     """Form enabling unregistered users to sign up."""
-    USER_TYPE_CHOICES = (('tutor', 'Tutor'), ('student', 'Student'))
-    type = forms.ChoiceField(choices=USER_TYPE_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}), initial='student')
+    USER_TYPE_CHOICES = (('student', 'Student'), ('tutor', 'Tutor'))
+    type = forms.ChoiceField(choices=USER_TYPE_CHOICES, required=True)
 
     class Meta:
         """Form options."""
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'type']
-        widgets = {
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-        }
+
+    def clean(self):
+        """Clean the data and generate messages for any errors."""
+        super().clean()
+        if not self.errors:
+            if User.objects.filter(email=self.cleaned_data.get('email')).exists():
+                self.add_error('email', 'Email is already taken')
+            if User.objects.filter(username=self.cleaned_data.get('username')).exists():
+                self.add_error('username', 'Username is already taken')
 
     def save(self, commit=True):
         """Create a new user."""
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data['new_password'])
+        user.type = self.cleaned_data.get('type')
+        user.set_password(self.cleaned_data.get('new_password'))
         if commit:
             user.save()
         return user

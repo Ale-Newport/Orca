@@ -49,7 +49,6 @@ class LoginProhibitedMixin:
 
 class PasswordView(LoginRequiredMixin, FormView):
     """Display password change screen and handle password change requests."""
-
     template_name = 'password.html'
     form_class = PasswordForm
 
@@ -67,14 +66,13 @@ class PasswordView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        """Redirect the user after successful password change."""
+        """Return redirect URL after successful password change."""
         user = self.request.user
         if user.type == 'admin':
             return reverse('admin_dashboard')
         elif user.type == 'tutor':
             return reverse('tutor_dashboard')
-        else:
-            return reverse('student_dashboard')
+        return reverse('student_dashboard')
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     """Display user profile editing screen, and handle profile modifications."""
@@ -128,27 +126,41 @@ class LogInView(LoginProhibitedMixin, View):
     """Display login screen and handle user login."""
     http_method_names = ['get', 'post']
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.next = None
+
     def get(self, request):
         """Display log in template."""
-        self.next = request.GET.get('next') or ''
+        self.next = request.GET.get('next', '')
         return self.render()
 
     def post(self, request):
         """Handle log in attempt."""
         form = LogInForm(request.POST)
+        self.next = request.POST.get('next', '')
         if form.is_valid():
             user = form.get_user()
             if user is not None:
                 login(request, user)
-                return redirect(self.get_redirect_url(user))
+                return redirect(self.get_success_url())
             else:
                 messages.add_message(request, messages.ERROR, "The credentials provided were invalid!")
-        else:
-            messages.add_message(request, messages.ERROR, "Please correct the errors below.")
         return self.render()
+    
+    def get_success_url(self):
+        """Return success URL after login."""
+        if self.next:
+            return self.next
+        user = self.request.user
+        if user.type == 'admin':
+            return reverse('admin_dashboard')
+        elif user.type == 'tutor':
+            return reverse('tutor_dashboard')
+        return reverse('student_dashboard')
 
     def render(self):
-        """Render log in template with blank log in form."""
+        """Render login template."""
         form = LogInForm()
         return render(self.request, 'log_in.html', {'form': form, 'next': self.next})
 
