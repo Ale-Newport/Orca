@@ -5,6 +5,8 @@ from datetime import timedelta
 from tutorials.models import User, Lesson, Invoice
 
 class InvoiceBasicsTest(TestCase):
+    """Tests basic attributes and behaviors of the Invoice model."""
+
     def setUp(self):
         self.student = User.objects.create(
             username='@student',
@@ -29,6 +31,7 @@ class InvoiceBasicsTest(TestCase):
             due_date=timezone.now().date() + timedelta(days=30)
         )
         self.assertIsNotNone(invoice.issued_date)
+        self.assertEqual(invoice.issued_date, timezone.now().date())
 
     def test_invoice_default_unpaid(self):
         invoice = Invoice.objects.create(
@@ -46,6 +49,14 @@ class InvoiceBasicsTest(TestCase):
         )
         self.assertEqual(invoice.student, self.student)
 
+    def test_invoice_rejects_negative_amount(self):
+        with self.assertRaises(ValueError):
+            Invoice.objects.create(
+                student=self.student,
+                amount=Decimal('-50.00'),
+                due_date=timezone.now().date() + timedelta(days=30)
+            )
+
     def test_invoice_decimal_places(self):
         amount = Decimal('50.55')
         invoice = Invoice.objects.create(
@@ -56,8 +67,9 @@ class InvoiceBasicsTest(TestCase):
         self.assertEqual(invoice.amount, amount)
 
 
-
 class InvoiceGenerationTest(TestCase):
+    """Tests invoice creation logic related to lessons."""
+
     def setUp(self):
         self.student = User.objects.create_user(
             username='@student',
@@ -118,3 +130,14 @@ class InvoiceGenerationTest(TestCase):
             due_date=timezone.now().date() + timedelta(days=30)
         )
         self.assertEqual(invoice.amount, expected_amount)
+
+    def test_zero_duration_lesson_creates_no_invoice(self):
+        zero_lesson = Lesson.objects.create(
+            student=self.student,
+            subject='Empty',
+            date=timezone.now() + timedelta(days=1),
+            duration=0,
+            status='Approved'
+        )
+        invoice = Invoice.objects.filter(student=self.student, amount=0)
+        self.assertFalse(invoice.exists())
