@@ -310,13 +310,22 @@ def list_notifications(request):
 @login_required
 @user_type_required(['admin'])
 def create_notification(request):
+    user_id = request.GET.get('user')
+    message = request.GET.get('message')
+    
     if request.method == 'POST':
         form = NotificationForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('list_notifications')
     else:
-        form = NotificationForm()
+        initial_data = {}
+        if user_id:
+            initial_data['user'] = get_object_or_404(User, pk=user_id)
+        if message:
+            initial_data['message'] = message
+        form = NotificationForm(initial=initial_data)
+    
     return render(request, 'admin/create_notification.html', {'form': form})
 
 @login_required

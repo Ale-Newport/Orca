@@ -105,6 +105,8 @@
                     <a href="{% url 'update_invoice' invoice.pk %}"><i class="bi bi-pen-fill"></i></a>
                     &nbsp;&nbsp; 
                     <a href="{% url 'delete_invoice' invoice.pk %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
+                    &nbsp;&nbsp; 
+                    <a href="{% url 'create_notification' %}?user={{ invoice.student.id }}&message={% if not invoice.paid %}Reminder%20that%20you%20need%20to%20pay%20your%20invoice%20{{ invoice.pk }}%20for%20{{ invoice.amount }}%20before%20{{ invoice.due_date }}{% else %}Your%20invoice%20{{ invoice.pk }}%20for%20{{ invoice.amount }}%20has%20been%20paid{% endif %}"><i class="fa-solid fa-envelope"></i></a>
                 </td>
             </tr>
             {% endfor %}
