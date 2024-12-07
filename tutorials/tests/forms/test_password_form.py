@@ -3,6 +3,7 @@ from django.test import TestCase
 from tutorials.models import User
 from tutorials.forms import PasswordForm
 
+# Included edge test cases 
 class PasswordFormTestCase(TestCase):
 
     fixtures = ['tutorials/tests/fixtures/default_user.json']
@@ -30,32 +31,45 @@ class PasswordFormTestCase(TestCase):
         self.form_input['password_confirmation'] = 'password123'
         form = PasswordForm(user=self.user, data=self.form_input)
         self.assertFalse(form.is_valid())
+        self.assertIn('new_password', form.errors)
 
     def test_password_must_contain_lowercase_character(self):
         self.form_input['new_password'] = 'PASSWORD123'
         self.form_input['password_confirmation'] = 'PASSWORD123'
         form = PasswordForm(user=self.user, data=self.form_input)
         self.assertFalse(form.is_valid())
+        self.assertIn('new_password', form.errors)
 
     def test_password_must_contain_number(self):
         self.form_input['new_password'] = 'PasswordABC'
         self.form_input['password_confirmation'] = 'PasswordABC'
         form = PasswordForm(user=self.user, data=self.form_input)
         self.assertFalse(form.is_valid())
+        self.assertIn('new_password', form.errors)
+
+    def test_password_minimum_length(self):
+        self.form_input['new_password'] = 'Pwd1'
+        self.form_input['password_confirmation'] = 'Pwd1'
+        form = PasswordForm(user=self.user, data=self.form_input)
+        self.assertFalse(form.is_valid())
+        self.assertIn('new_password', form.errors)
 
     def test_new_password_and_password_confirmation_are_identical(self):
         self.form_input['password_confirmation'] = 'WrongPassword123'
         form = PasswordForm(user=self.user, data=self.form_input)
         self.assertFalse(form.is_valid())
+        self.assertIn('password_confirmation', form.errors)
 
     def test_password_must_be_valid(self):
         self.form_input['password'] = 'WrongPassword123'
         form = PasswordForm(user=self.user, data=self.form_input)
         self.assertFalse(form.is_valid())
+        self.assertIn('password', form.errors)
 
     def test_form_must_contain_user(self):
         form = PasswordForm(data=self.form_input)
         self.assertFalse(form.is_valid())
+        self.assertIn('user', form.errors)
 
     def test_save_form_changes_password(self):
         form = PasswordForm(user=self.user, data=self.form_input)
@@ -70,3 +84,9 @@ class PasswordFormTestCase(TestCase):
         form.full_clean()
         result = form.save()
         self.assertFalse(result)
+
+    def test_password_with_special_characters(self):
+        self.form_input['new_password'] = 'NewPassword@123'
+        self.form_input['password_confirmation'] = 'NewPassword@123'
+        form = PasswordForm(user=self.user, data=self.form_input)
+        self.assertTrue(form.is_valid())
