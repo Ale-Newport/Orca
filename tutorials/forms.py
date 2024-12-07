@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
-from .models import User, Lesson, Invoice, Subject, Notification
+from tutorials.models import User, Subject, Lesson, Invoice, Notification
 from datetime import datetime, time, timedelta
 
 # Profile forms
@@ -143,11 +143,10 @@ class LessonForm(forms.ModelForm):
     tutor = forms.ModelChoiceField(queryset=User.objects.filter(type='tutor').order_by('username'), required=True)
     date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={'type':'datetime-local'}), required=True)
     duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15, 'min': 30, 'max': 240}), required=True)
-    notes = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=False)
 
     class Meta:
         model = Lesson
-        fields = ['student', 'tutor', 'subject', 'date', 'duration', 'notes']
+        fields = ['student', 'tutor', 'subject', 'date', 'duration']
 
     def clean(self):
         cleaned_data = super().clean()
