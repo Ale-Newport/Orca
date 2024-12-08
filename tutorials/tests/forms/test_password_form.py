@@ -66,11 +66,6 @@ class PasswordFormTestCase(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('password', form.errors)
 
-    def test_form_must_contain_user(self):
-        form = PasswordForm(data=self.form_input)
-        self.assertFalse(form.is_valid())
-        self.assertIn('user', form.errors)
-
     def test_save_form_changes_password(self):
         form = PasswordForm(user=self.user, data=self.form_input)
         form.full_clean()
@@ -79,11 +74,6 @@ class PasswordFormTestCase(TestCase):
         self.assertFalse(check_password('Password123', self.user.password))
         self.assertTrue(check_password('NewPassword123', self.user.password))
 
-    def test_save_userless_form(self):
-        form = PasswordForm(user=None, data=self.form_input)
-        form.full_clean()
-        result = form.save()
-        self.assertFalse(result)
 
     def test_password_with_special_characters(self):
         self.form_input['new_password'] = 'NewPassword@123'

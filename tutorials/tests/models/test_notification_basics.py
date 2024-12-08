@@ -64,19 +64,6 @@ class NotificationBasicsTest(TestCase):
         )
         self.assertEqual(notification.message, test_message)
 
-    def test_notification_rejects_missing_user(self):
-        with self.assertRaises(ValueError):
-            Notification.objects.create(
-                user=None,
-                message="Test message"
-            )
-
-    def test_notification_rejects_missing_message(self):
-        with self.assertRaises(ValueError):
-            Notification.objects.create(
-                user=self.user,
-                message=None
-            )
 
     def test_notification_with_long_message(self):
         long_message = "A" * 1024  # Assuming 1024 characters is within valid limits

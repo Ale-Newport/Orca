@@ -28,13 +28,14 @@ class LoginProhibitedMixin:
         return super().dispatch(*args, **kwargs)
 
     def handle_already_logged_in(self, *args, **kwargs):
+        """Handle when user is already logged in."""
         user = self.request.user
         if user.type == 'admin':
-            return redirect('admin:index')
+            return redirect('admin_dashboard')
         elif user.type == 'tutor':
             return redirect('tutor_dashboard')
         else:
-            return redirect('dashboard')
+            return redirect('student_dashboard')
 
     def get_redirect_when_logged_in_url(self):
         """Returns the url to redirect to when not logged in."""
@@ -98,8 +99,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
             return reverse('admin_dashboard')
         elif user.type == 'tutor':
             return reverse('tutor_dashboard')
-        else:
-            return reverse('student_dashboard')
+        return reverse('student_dashboard')
 
 class SignUpView(LoginProhibitedMixin, FormView):
     """Display the sign up screen and handle sign ups."""
@@ -114,7 +114,7 @@ class SignUpView(LoginProhibitedMixin, FormView):
 
     def get_success_url(self):
         """Return the redirect URL based on user type."""
-        user = self.object
+        user = self.object  # self.object is set in form_valid
         if user.type == 'admin':
             return reverse('admin_dashboard')
         elif user.type == 'tutor':
@@ -138,14 +138,22 @@ class LogInView(LoginProhibitedMixin, View):
     def post(self, request):
         """Handle log in attempt."""
         form = LogInForm(request.POST)
-        self.next = request.POST.get('next', '')
+        
+        if not request.POST.get('username'):
+            messages.error(request, "Username field cannot be blank")
+            return self.render()
+            
+        if not request.POST.get('password'):
+            messages.error(request, "Password field cannot be blank")
+            return self.render()
+        
         if form.is_valid():
             user = form.get_user()
             if user is not None:
                 login(request, user)
                 return redirect(self.get_success_url())
             else:
-                messages.add_message(request, messages.ERROR, "The credentials provided were invalid!")
+                messages.error(request, "The credentials provided were invalid!")
         return self.render()
     
     def get_success_url(self):
@@ -158,7 +166,7 @@ class LogInView(LoginProhibitedMixin, View):
         elif user.type == 'tutor':
             return reverse('tutor_dashboard')
         return reverse('student_dashboard')
-
+    
     def render(self):
         """Render login template."""
         form = LogInForm()

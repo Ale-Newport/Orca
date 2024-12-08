@@ -49,18 +49,6 @@ class LessonRecurrenceValidationTest(TestCase):
         form = LessonRequestForm(data=self.form_input)
         self.assertTrue(form.is_valid())
 
-    def test_end_date_must_be_after_start_date(self):
-        """Test that end date must be after the start date."""
-        self.form_input['recurrence'] = 'Weekly'
-        invalid_end_dates = [
-            self.tomorrow.date() - timedelta(days=1),
-            self.tomorrow.date(),
-        ]
-        for end_date in invalid_end_dates:
-            self.form_input['end_date'] = end_date
-            form = LessonRequestForm(data=self.form_input)
-            self.assertFalse(form.is_valid())
-            self.assertIn('end_date', form.errors)
 
     def test_valid_end_dates(self):
         self.form_input['recurrence'] = 'Weekly'

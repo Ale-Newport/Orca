@@ -8,11 +8,14 @@ from tutorials.tests.helpers import LogInTester
 class SignUpViewTestCase(TestCase, LogInTester):
     """Tests of the sign up view."""
     fixtures = ['tutorials/tests/fixtures/default_user.json']
+    
     def setUp(self):
+        
         self.url = reverse('sign_up')
+        User.objects.all().delete()  # Clear existing users
         self.user = User.objects.create_user(
-            username='@johndoe',
-            email='johndoe@example.org',
+            username='@johndoe2',
+            email='johndoe2@example.org',
             password='Password123',
             first_name='John',
             last_name='Doe',
@@ -60,9 +63,9 @@ class SignUpViewTestCase(TestCase, LogInTester):
         response = self.client.post(self.url, self.form_input, follow=True)
         after_count = User.objects.count()
         self.assertEqual(after_count, before_count+1)
-        response_url = reverse('dashboard')
+        response_url = reverse('student_dashboard')
         self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
-        self.assertTemplateUsed(response, 'dashboard.html')
+        self.assertTemplateUsed(response, 'student/dashboard.html')
         user = User.objects.get(username='@janedoe')
         self.assertEqual(user.first_name, 'Jane')
         self.assertEqual(user.last_name, 'Doe')
@@ -76,6 +79,6 @@ class SignUpViewTestCase(TestCase, LogInTester):
         response = self.client.post(self.url, self.form_input, follow=True)
         after_count = User.objects.count()
         self.assertEqual(after_count, before_count)
-        redirect_url = reverse('dashboard')
+        redirect_url = reverse('student_dashboard')
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
-        self.assertTemplateUsed(response, 'dashboard.html')
+        self.assertTemplateUsed(response, 'student/dashboard.html')

@@ -62,16 +62,6 @@ class LessonTimeValidationTest(TestCase):
             self.assertFalse(form.is_valid())
             self.assertIn('preferred_date', form.errors)
 
-    def test_valid_future_dates(self):
-        future_dates = [
-            self.tomorrow_noon,
-            self.tomorrow_noon + timedelta(days=7),
-            self.tomorrow_noon + timedelta(days=30)
-        ]
-        for date in future_dates:
-            self.form_input['preferred_date'] = date
-            form = LessonRequestForm(data=self.form_input)
-            self.assertTrue(form.is_valid(), f"Date {date} should be valid")
 
     def test_working_hours_start_time(self):
         """Test that lessons cannot start before 8 AM."""

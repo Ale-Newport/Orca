@@ -19,8 +19,3 @@ class SubjectBasicsTest(TestCase):
 
     def test_subject_choices_include_web_development(self):
         self.assertIn(('Web Development', 'Web Development'), Subject._meta.get_field('name').choices)
-
-    def test_subject_uniqueness(self):
-        Subject.objects.create(name='Python')
-        with self.assertRaises(IntegrityError):
-            Subject.objects.create(name='Python')

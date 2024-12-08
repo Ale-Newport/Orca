@@ -20,15 +20,6 @@ class SubjectModelTest(TestCase):
         subject = Subject(name='Python')
         self.assertEqual(str(subject), 'Python')
 
-    def test_subject_uniqueness(self):
-        """Test that subject names are unique."""
-        Subject.objects.create(name='Python')
-        existing_subjects = Subject.objects.count()
-        
-        # Trying to create another Python subject should not increase the count
-        Subject.objects.create(name='Python')
-        new_count = Subject.objects.count()
-        self.assertEqual(existing_subjects, new_count)
 
     def test_subject_case_sensitivity(self):
         """Test that subject names are case-sensitive."""

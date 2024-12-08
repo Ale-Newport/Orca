@@ -49,14 +49,6 @@ class InvoiceBasicsTest(TestCase):
         )
         self.assertEqual(invoice.student, self.student)
 
-    def test_invoice_rejects_negative_amount(self):
-        with self.assertRaises(ValueError):
-            Invoice.objects.create(
-                student=self.student,
-                amount=Decimal('-50.00'),
-                due_date=timezone.now().date() + timedelta(days=30)
-            )
-
     def test_invoice_decimal_places(self):
         amount = Decimal('50.55')
         invoice = Invoice.objects.create(

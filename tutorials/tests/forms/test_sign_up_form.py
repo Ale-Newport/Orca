@@ -19,7 +19,16 @@ class SignUpFormTestCase(TestCase):
         }
 
     def test_valid_sign_up_form(self):
-        form = SignUpForm(data=self.form_input)
+        form_input = {
+            'first_name': 'Jane',
+            'last_name': 'Doe',
+            'username': '@janedoe2',  # Ensure unique username
+            'email': 'janedoe2@example.org',  # Ensure unique email
+            'new_password': 'Password123',
+            'password_confirmation': 'Password123',
+            'type': 'student'
+        }
+        form = SignUpForm(data=form_input)
         self.assertTrue(form.is_valid())
 
     def test_form_has_necessary_fields(self):

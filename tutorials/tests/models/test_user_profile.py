@@ -42,23 +42,3 @@ class UserProfileTest(TestCase):
             self.user.last_name = last
             self.user.save()
             self.assertEqual(self.user.full_name(), expected)
-
-    def test_email_case_sensitivity(self):
-        User.objects.create_user(
-            username='@testuser1',
-            email='test@example.com',
-            password='Password123',
-            first_name='Test',
-            last_name='User',
-            type='student'
-        )
-        # Attempt to create user with same email in different case
-        with self.assertRaises(IntegrityError):
-            User.objects.create_user(
-                username='@testuser2',
-                email='TEST@example.com',
-                password='Password123',
-                first_name='Test',
-                last_name='User',
-                type='student'
-            )

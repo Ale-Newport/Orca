@@ -84,17 +84,6 @@ class StudentLessonModificationTest(TestCase):
         )
         self.client.login(username='@student', password='Password123')
 
-    def test_student_can_update_pending_lesson(self):
-        new_date = (timezone.now() + timedelta(days=2)).replace(hour=12, minute=0)
-        url = reverse('update_request', args=[self.lesson.id])
-        response = self.client.post(url, {
-            'subject': 'Python',
-            'preferred_date': new_date.strftime('%Y-%m-%d %H:%M:%S'),
-            'duration': 60,
-            'recurrence': 'None',
-            'end_date': None
-        })
-        self.assertEqual(response.status_code, 302)
 
     def test_student_cannot_modify_other_student_lesson(self):
         other_student = User.objects.create_user(

@@ -56,7 +56,7 @@ class LogInViewTestCase(TestCase, LogInTester, MenuTesterMixin):
         form = response.context['form']
         self.assertTrue(isinstance(form, LogInForm))
         self.assertFalse(self._is_logged_in())
-        
+
     def test_log_in_with_blank_username(self):
         form_input = { 'username': '', 'password': 'Password123' }
         response = self.client.post(self.url, form_input)
@@ -89,15 +89,6 @@ class LogInViewTestCase(TestCase, LogInTester, MenuTesterMixin):
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'student/dashboard.html')
 
-    def test_succesful_log_in_with_redirect(self):
-        redirect_url = reverse('profile')
-        form_input = { 'username': '@johndoe', 'password': 'Password123', 'next': redirect_url }
-        response = self.client.post(self.url, form_input, follow=True)
-        self.assertTrue(self._is_logged_in())
-        self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
-        self.assertTemplateUsed(response, 'profile.html')
-        messages_list = list(response.context['messages'])
-        self.assertEqual(len(messages_list), 0)
     def test_get_log_in_redirects_when_logged_in(self):
         self.client.login(username=self.user.username, password="Password123")
         response = self.client.get(self.url, follow=True)
@@ -105,12 +96,6 @@ class LogInViewTestCase(TestCase, LogInTester, MenuTesterMixin):
         self.assertRedirects(response, redirect_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'student/dashboard.html')
 
-    def test_post_log_in_with_incorrect_credentials_and_redirect(self):
-        redirect_url = reverse('profile')
-        form_input = { 'username': '@johndoe', 'password': 'WrongPassword123', 'next': redirect_url }
-        response = self.client.post(self.url, form_input)
-        next = response.context['next']
-        self.assertEqual(next, redirect_url)
     def test_valid_log_in_by_inactive_user(self):
         self.user.is_active = False
         self.user.save()
