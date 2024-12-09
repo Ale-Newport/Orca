@@ -345,7 +345,7 @@ def create_notification(request):
     
     return render(request, 'admin/create_notification.html', {'form': form})
 
-# Delete notificaitions
+# Delete notifications
 @login_required
 @user_type_required(['admin'])
 def delete_notification(request, pk):
