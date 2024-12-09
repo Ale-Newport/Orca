@@ -14,7 +14,7 @@ from tutorials.helpers import login_prohibited
 @login_prohibited
 def home(request):
     """Display the application's home screen."""
-    return render(request, 'home.html')
+    return render(request, 'base/home.html')
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
@@ -50,7 +50,7 @@ class LoginProhibitedMixin:
 class PasswordView(LoginRequiredMixin, FormView):
     """Display password change screen and handle password change requests."""
 
-    template_name = 'password.html'
+    template_name = 'profile/password.html'
     form_class = PasswordForm
 
     def get_form_kwargs(self, **kwargs):
@@ -79,7 +79,7 @@ class PasswordView(LoginRequiredMixin, FormView):
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     """Display user profile editing screen, and handle profile modifications."""
 
-    template_name = "profile.html"
+    template_name = "profile/profile.html"
 
     def get_form_class(self):
         """Return the form class based on the user type."""
@@ -107,7 +107,7 @@ class SignUpView(LoginProhibitedMixin, FormView):
     """Display the sign up screen and handle sign ups."""
 
     form_class = SignUpForm
-    template_name = "sign_up.html"
+    template_name = "profile/sign_up.html"
 
     def form_valid(self, form):
         self.object = form.save()
@@ -150,7 +150,7 @@ class LogInView(LoginProhibitedMixin, View):
     def render(self):
         """Render log in template with blank log in form."""
         form = LogInForm()
-        return render(self.request, 'log_in.html', {'form': form, 'next': self.next})
+        return render(self.request, 'profile/log_in.html', {'form': form, 'next': self.next})
 
     def get_redirect_url(self, user):
         """Return the redirect URL based on user type."""
@@ -172,7 +172,7 @@ def log_out(request):
 def notifications(request):
     """View all notifications for the logged-in student."""
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'list_notifications.html', {'notifications': notifications})
+    return render(request, 'profile/list_notifications.html', {'notifications': notifications})
 
 @login_required
 def mark_notification_read(request, pk):
