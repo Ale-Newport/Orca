@@ -8,11 +8,12 @@ from datetime import datetime, timedelta
 from django.contrib import messages
 from tutorials.decorators import user_type_required
 
-
+# Display tutor dashboard with upcoming lessons
 @login_required
 @user_type_required(['tutor'])
 def dashboard(request):
     user = request.user
+    # Get tutor approved lessons
     lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now(), status='Approved').order_by('date')[:5]
     context = {
         'user': user,
@@ -28,6 +29,7 @@ def lessons(request):
     lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now()).order_by('date')
     return render(request, 'tutor/tutor_lessons.html', {'lessons': lessons})
 
+# monthly calendar view
 @login_required
 @user_type_required(['tutor'])
 def schedule(request, year=None, month=None):

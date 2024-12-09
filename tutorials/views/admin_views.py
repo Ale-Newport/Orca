@@ -12,17 +12,25 @@ from tutorials.decorators import user_type_required
 @user_type_required(['admin'])
 def dashboard(request):
     """Display the admin dashboard"""
+
+    # Users
     total_users = User.objects.count()
     student_users = User.objects.filter(type='student').count()
     tutor_users = User.objects.filter(type='tutor').count()
     admin_users = User.objects.filter(type='admin').count()
+
+    # Lessons
     total_lessons = Lesson.objects.filter(date__gte=timezone.now()).count()
     approved_lessons = Lesson.objects.filter(status='Approved', date__gte=timezone.now()).count()
     pending_lessons = Lesson.objects.filter(status='Pending', date__gte=timezone.now()).count()
     rejected_lessons = Lesson.objects.filter(status='Rejected', date__gte=timezone.now()).count()
+
+    # Invoice counts
     total_invoices = Invoice.objects.count()
     paid_invoices = Invoice.objects.filter(paid=True).count()
     unpaid_invoices = Invoice.objects.filter(paid=False).count()
+
+    # Notification counts
     total_notifications = Notification.objects.count()
     read_notifications = Notification.objects.filter(is_read=True).count()
     unread_notifications = Notification.objects.filter(is_read=False).count()
@@ -51,16 +59,16 @@ def dashboard(request):
 def list_users(request):
     users = User.objects.all()
 
-    # Filtering
+    # Handle filtering
     type_filter = request.GET.get('type')
     if type_filter: users = users.filter(type=type_filter)
 
-    # Searching
+    # Handle searching
     search_query = request.GET.get('search')
     if search_query:
         users = users.filter(Q(username__icontains=search_query) | Q(email__icontains=search_query) | Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query))
 
-    # Ordering
+    # Handle searching
     order_by = request.GET.get('order_by', 'username')
     users = users.order_by(order_by)
 
@@ -83,6 +91,8 @@ def create_user(request):
         form = UserFormAdmin()
     return render(request, 'admin/create_user.html', {'form': form})
 
+
+# Update existing user's details
 @login_required
 @user_type_required(['admin'])
 def update_user(request, pk):
@@ -96,6 +106,7 @@ def update_user(request, pk):
         form = UserFormAdmin(instance=user)
     return render(request, 'admin/update_user.html', {'form': form})
 
+# Handles user deletion
 @login_required
 @user_type_required(['admin'])
 def delete_user(request, pk):
@@ -181,6 +192,7 @@ def create_lesson(request):
     
     return render(request, 'admin/create_lesson.html', {'form': form})
 
+# Handles updating lesson details (editing existing lesson bookings)
 @login_required
 @user_type_required(['admin'])
 def update_lesson(request, pk):
@@ -194,6 +206,7 @@ def update_lesson(request, pk):
         form = LessonForm(instance=lesson)
     return render(request, 'admin/update_lesson.html', {'form': form})
 
+# Handles lesson deletions
 @login_required
 @user_type_required(['admin'])
 def delete_lesson(request, pk):
@@ -238,6 +251,7 @@ def list_invoices(request):
 
     return render(request, 'admin/list_invoices.html', context)
 
+# Handles invoice creation
 @login_required
 @user_type_required(['admin'])
 def create_invoice(request):
@@ -250,6 +264,7 @@ def create_invoice(request):
         form = InvoiceForm()
     return render(request, 'admin/create_invoice.html', {'form': form})
 
+# Updare existing invoices reation
 @login_required
 @user_type_required(['admin'])
 def update_invoice(request, pk):
@@ -263,6 +278,7 @@ def update_invoice(request, pk):
         form = InvoiceForm(instance=invoice)
     return render(request, 'admin/update_invoice.html', {'form': form})
 
+# Handles invoice deletions
 @login_required
 @user_type_required(['admin'])
 def delete_invoice(request, pk):
@@ -307,6 +323,7 @@ def list_notifications(request):
 
     return render(request, 'admin/list_notifications.html', context)
 
+# Notification handling
 @login_required
 @user_type_required(['admin'])
 def create_notification(request):
@@ -328,6 +345,7 @@ def create_notification(request):
     
     return render(request, 'admin/create_notification.html', {'form': form})
 
+# Delete notificaitions
 @login_required
 @user_type_required(['admin'])
 def delete_notification(request, pk):

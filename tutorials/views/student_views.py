@@ -15,6 +15,8 @@ from tutorials.forms import LessonRequestForm
 @user_type_required(['student'])
 def dashboard(request):
     """Display the student dashboard"""
+
+    # Get student's dashboard data
     user = request.user
     upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now(), status="Approved").order_by('date')[:5]
     unpaid_invoices = Invoice.objects.filter(student=user, paid=False)
@@ -27,6 +29,7 @@ def dashboard(request):
     }
     return render(request, 'student/dashboard.html', context)
 
+# Display calendar view of schedule with lessons
 @login_required
 @user_type_required(['student'])
 def schedule(request, year=None, month=None):
@@ -66,6 +69,7 @@ def schedule(request, year=None, month=None):
     }
     return render(request, 'student/view_schedule.html', context)
 
+# Displays all lesson requests made by student
 @login_required
 @user_type_required(['student'])
 def requests(request):
@@ -81,7 +85,7 @@ def lessons(request):
     lessons = Lesson.objects.filter(student=user, date__gte=timezone.now(), status="Approved").order_by('date')
     return render(request, 'student/list_lessons.html', {'lessons': lessons})
 
-
+# Handles creating new lessons to book - supports recurring lessons
 @login_required
 @user_type_required(['student'])
 def request_lesson(request):
@@ -117,11 +121,12 @@ def request_lesson(request):
                         if new_date.date() > end_date:
                             break
                         
+                        # Check for conflicts
                         lesson_end_time = new_date + timedelta(minutes=lesson.duration)
                         overlapping_lessons = Lesson.objects.filter(student=lesson.student, date__lt=lesson_end_time, date__gte=new_date)
                         if overlapping_lessons.exists():
                             continue
-
+                        # Create lesson instance
                         if not Lesson.objects.filter(date=new_date).exists():
                             Lesson.objects.create(
                                 student=lesson.student,
@@ -148,7 +153,7 @@ def request_lesson(request):
     
     return render(request, 'student/create_request.html', {'form': form})
 
-
+# Handles modifying of existing lesson requests
 @login_required
 @user_type_required(['student'])
 def update_request(request, pk):
@@ -164,7 +169,7 @@ def update_request(request, pk):
         form = LessonRequestForm(instance=lesson)
     return render(request, 'student/update_request.html', {'form': form, 'lesson': lesson})
 
-
+# Handles deletion of lesson requests
 @login_required
 @user_type_required(['student'])
 def delete_request(request, pk):
@@ -183,7 +188,7 @@ def delete_request(request, pk):
     else:
         return HttpResponseBadRequest('This URL only supports GET and POST requests.')
 
-
+# Displays all student invoices - newest first
 @login_required
 @user_type_required(['student'])
 def invoices(request):

@@ -11,11 +11,13 @@ from tutorials.forms import LogInForm, PasswordForm, SignUpForm, UserForm, UserF
 from tutorials.models import Notification
 from tutorials.helpers import login_prohibited
 
+# Landing page - only visible to users that are not logged in
 @login_prohibited
 def home(request):
     """Display the application's home screen."""
     return render(request, 'home.html')
 
+# Prevent non authenticated users from acessing certain pages
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
 
@@ -27,6 +29,7 @@ class LoginProhibitedMixin:
             return self.handle_already_logged_in(*args, **kwargs)
         return super().dispatch(*args, **kwargs)
 
+    # Route users to corresponding page
     def handle_already_logged_in(self, *args, **kwargs):
         """Handle when user is already logged in."""
         user = self.request.user
@@ -172,6 +175,7 @@ class LogInView(LoginProhibitedMixin, View):
         form = LogInForm()
         return render(self.request, 'log_in.html', {'form': form, 'next': self.next})
 
+    # Get dashboard URL based on user type
     def get_redirect_url(self, user):
         """Return the redirect URL based on user type."""
         if user.type == 'admin':
@@ -181,19 +185,20 @@ class LogInView(LoginProhibitedMixin, View):
         else:
             return reverse('student_dashboard')
 
-
+# Handle user logout
 def log_out(request):
     """Log out the current user"""
     logout(request)
     return redirect('home')
 
-
+# Display user's notification list
 @login_required
 def notifications(request):
     """View all notifications for the logged-in student."""
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'student/list_notifications.html', {'notifications': notifications})
 
+# Toggle notification read status
 @login_required
 def mark_notification_read(request, pk):
     notification = get_object_or_404(Notification, id=pk)
