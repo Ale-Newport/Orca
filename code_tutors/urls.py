@@ -40,8 +40,8 @@ urlpatterns = [
     path('student/schedule/', student_views.schedule, name='student_schedule'),
     path('student/schedule/<int:year>/<int:month>/', student_views.schedule, name='student_schedule'),
     path('student/requests/', student_views.requests, name='student_requests'),
-    path('student/lesson/request/', student_views.request_lesson, name='request_lesson'),
-    path('student/lesson/update/<int:pk>/', student_views.update_request, name='update_request'),
+    path('student/lesson/request/', student_views.create_update_request, name='create_request'),
+    path('student/lesson/update/<int:pk>/', student_views.create_update_request, name='update_request'),
     path('student/lesson/delete/<int:pk>/', student_views.delete_request, name='delete_request'),
     path('student/invoices/', student_views.invoices, name='student_invoices'),
 
@@ -54,20 +54,17 @@ urlpatterns = [
     # Admin
     path('admin/dashboard/', admin_views.dashboard, name='admin_dashboard'),
     path('admin/users/', admin_views.list_users, name='list_users'),
-    path('admin/users/create/', admin_views.create_user, name='create_user'),
-    path('admin/users/update/<int:pk>/', admin_views.update_user, name='update_user'),
-    path('admin/users/delete/<int:pk>/', admin_views.delete_user, name='delete_user'),
+    path('admin/users/create/', admin_views.create_update_user, name='create_user'),
+    path('admin/users/update/<int:pk>/', admin_views.create_update_user, name='update_user'),
     path('admin/lessons/', admin_views.list_lessons, name='list_lessons'),
-    path('admin/lessons/create/', admin_views.create_lesson, name='create_lesson'),
-    path('admin/lessons/update/<int:pk>/', admin_views.update_lesson, name='update_lesson'),
-    path('admin/lessons/delete/<int:pk>/', admin_views.delete_lesson, name='delete_lesson'),
+    path('admin/lessons/create/', admin_views.create_update_lesson, name='create_lesson'),
+    path('admin/lessons/update/<int:pk>/', admin_views.create_update_lesson, name='update_lesson'),
     path('admin/invoices/', admin_views.list_invoices, name='list_invoices'),
-    path('admin/invoices/create/', admin_views.create_invoice, name='create_invoice'),
-    path('admin/invoices/update/<int:pk>/', admin_views.update_invoice, name='update_invoice'),
-    path('admin/invoices/delete/<int:pk>/', admin_views.delete_invoice, name='delete_invoice'),
+    path('admin/invoices/create/', admin_views.create_update_invoice, name='create_invoice'),
+    path('admin/invoices/update/<int:pk>/', admin_views.create_update_invoice, name='update_invoice'),
     path('admin/notifications/', admin_views.list_notifications, name='list_notifications'),
     path('admin/notifications/create/', admin_views.create_notification, name='create_notification'),
-    path('admin/notifications/delete/<int:pk>/', admin_views.delete_notification, name='delete_notification'),
+    path('admin/delete/<str:model_name>/<int:pk>/', admin_views.delete_object, name='delete_object'),
 
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

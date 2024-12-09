@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import pytz
 from faker import Faker
 from random import randint, choices, random
+from tutorials.helpers import calculate_invoice_amount
 
 
 class Command(BaseCommand):
@@ -50,7 +51,7 @@ class Command(BaseCommand):
     def generate_user_fixtures(self):
         user_fixtures = [
             {'username': '@johndoe', 'email': 'john.doe@example.org', 'first_name': 'John', 'last_name': 'Doe', 'type': 'admin'},
-            {'username': '@janedoe', 'email': 'jane.doe@example.org', 'first_name': 'Jane', 'last_name': 'Doe', 'type': 'tutor', 'subjects': ['Python', 'Java']},
+            {'username': '@janedoe', 'email': 'jane.doe@example.org', 'first_name': 'Jane', 'last_name': 'Doe', 'type': 'tutor', 'subjects': [Subject.objects.get(name='Python'), Subject.objects.get(name='Java')]},
             {'username': '@charlie', 'email': 'charlie.johnson@example.org', 'first_name': 'Charlie', 'last_name': 'Johnson', 'type': 'student'},
         ]
         for data in user_fixtures:
@@ -243,18 +244,3 @@ def create_username(first_name, last_name):
 def create_email(first_name, last_name):
     return first_name + '.' + last_name + '@example.org'
 
-def days_between(start_date, end_date):
-    return (end_date - start_date).days
-
-def calculate_invoice_amount(lesson):
-    if lesson is None:
-        return randint(10, 200)
-    if lesson.recurrence == 'None':
-        repetitions = 1
-    elif lesson.recurrence == 'Daily':
-        repetitions = days_between(lesson.date, datetime.combine(lesson.recurrence_end_date, datetime.min.time(), tzinfo=pytz.utc))
-    elif lesson.recurrence == 'Weekly':
-        repetitions = days_between(lesson.date, datetime.combine(lesson.recurrence_end_date, datetime.min.time(), tzinfo=pytz.utc)) // 7
-    elif lesson.recurrence == 'Monthly':
-        repetitions = days_between(lesson.date, datetime.combine(lesson.recurrence_end_date, datetime.min.time(), tzinfo=pytz.utc)) // 30
-    return lesson.duration * 0.5 * repetitions

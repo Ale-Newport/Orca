@@ -8,8 +8,6 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'email', 'first_name', 'last_name')
     ordering = ('username',)
 
-
-
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
     list_display = ('student', 'subject', 'date', 'duration', 'tutor', 'status', 'recurrence', 'recurrence_end_date')

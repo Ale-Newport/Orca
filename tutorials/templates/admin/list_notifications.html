@@ -18,7 +18,7 @@
                 <select name="user" class="form-control">
                     <option value="">All Users</option>
                     {% for user in users %}
-                    <option value="{{ user.id }}" {% if request.GET.user == user.id|stringformat:"s" %}selected{% endif %}>{{ user.username }}</option>
+                    <option value="{{ user.id }}" {% if request.GET.user == user.id|stringformat:"s" %}selected{% endif %}>{{ user }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -80,7 +80,7 @@
         <tbody>
             {% for notification in notifications %}
             <tr>
-                <td>{{ notification.user.username }}</td>
+                <td>{{ notification.user }}</a></td>
                 <td>{{ notification.message }}</td>
                 <td>{{ notification.created_at }}</td>
                 <td>
@@ -91,7 +91,7 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{% url 'delete_notification' notification.pk %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
+                    <a href="{% url 'delete_object' 'Notification' notification.pk %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
                 </td>
             </tr>
             {% endfor %}

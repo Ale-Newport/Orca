@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
-from tutorials.forms import LogInForm, PasswordForm, SignUpForm, UserForm, UserFormAdmin, UserFormTutor
+from tutorials.forms import LogInForm, PasswordForm, SignUpForm, ProfileForm
 from tutorials.models import Notification
 from tutorials.helpers import login_prohibited
 
@@ -85,9 +85,9 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         """Return the form class based on the user type."""
         user = self.request.user
         if user.type == 'tutor':
-            return UserFormTutor
+            return ProfileForm
         else:
-            return UserForm
+            return ProfileForm
 
     def get_object(self):
         """Return the object (user) to be updated."""
@@ -172,7 +172,7 @@ def log_out(request):
 def notifications(request):
     """View all notifications for the logged-in student."""
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'student/list_notifications.html', {'notifications': notifications})
+    return render(request, 'list_notifications.html', {'notifications': notifications})
 
 @login_required
 def mark_notification_read(request, pk):

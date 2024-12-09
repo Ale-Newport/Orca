@@ -1,32 +1,43 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from tutorials.helpers import login_prohibited
-from django.utils import timezone
-from tutorials.models import Lesson, Invoice
+from tutorials.models import Lesson, Notification
 from calendar import monthrange
-from datetime import datetime, timedelta
-from django.contrib import messages
+from datetime import datetime
 from tutorials.decorators import user_type_required
 
 
 @login_required
 @user_type_required(['tutor'])
 def dashboard(request):
+    """Display the tutor dashboard"""
     user = request.user
-    lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now(), status='Approved').order_by('date')[:5]
+    lessons = Lesson.objects.filter(tutor=user, status="Approved")
+    upcoming_lessons = []
+    for lesson in lessons:
+        if lesson.is_upcoming():
+            upcoming_lessons.append(lesson)
+    unread_notifications = Notification.objects.filter(user=user, is_read=False)
+    
     context = {
         'user': user,
-        'lessons': lessons,
+        'upcoming_lessons': upcoming_lessons,
+        'unread_notifications': unread_notifications,
     }
+    
     return render(request, 'tutor/tutor_dashboard.html', context)
 
 
 @login_required
 @user_type_required(['tutor'])
 def lessons(request):
+    """View all upcoming lessons for the logged-in tutor."""
     user = request.user
-    lessons = Lesson.objects.filter(tutor=user, date__gte=timezone.now()).order_by('date')
-    return render(request, 'tutor/tutor_lessons.html', {'lessons': lessons})
+    lessons = Lesson.objects.filter(tutor=user, status="Approved")
+    upcoming_lessons = []
+    for lesson in lessons:
+        if lesson.is_upcoming():
+            upcoming_lessons.append(lesson)
+    return render(request, 'tutor/tutor_lessons.html', {'lessons': upcoming_lessons})
 
 @login_required
 @user_type_required(['tutor'])
@@ -37,7 +48,12 @@ def schedule(request, year=None, month=None):
     year = year or today.year
     month = month or today.month
     # Get lessons for the given month
-    lessons = Lesson.objects.filter(tutor=user, date__year=year, date__month=month)
+    all_lessons = Lesson.objects.filter(tutor=user, status="Approved")
+    lessons = []
+    for lesson in all_lessons:
+        for date in lesson.lesson_dates():
+            if date.year == year and date.month == month:
+                lessons.append(lesson)
 
     # Generate calendar structure
     days_in_month = monthrange(year, month)[1]
@@ -46,7 +62,8 @@ def schedule(request, year=None, month=None):
     week = [None] * first_day_of_month
 
     for day in range(1, days_in_month + 1):
-        day_lessons = [lesson for lesson in lessons if lesson.date.day == day]
+        day_lessons = [lesson for lesson in lessons if any(date.date() == datetime(year, month, day).date() for date in lesson.lesson_dates())]
+        day_lessons = list(set(day_lessons))
         week.append({"day": day, "lessons": day_lessons})
         if len(week) == 7:
             calendar.append(week)

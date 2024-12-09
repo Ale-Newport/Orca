@@ -1,13 +1,15 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from tutorials.models import Lesson, Invoice, User, Notification
-from tutorials.forms import UserFormAdmin, LessonForm, InvoiceForm, NotificationForm
+from tutorials.models import Lesson, Invoice, User, Notification, Subject
+from tutorials.forms import UserForm, LessonForm, InvoiceForm, NotificationForm
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib import messages
-from datetime import datetime, timedelta
 from tutorials.decorators import user_type_required
+from tutorials.helpers import calculate_invoice_amount, model_is_valid
+from django.apps import apps
 
+# Admin dashboard
 @login_required
 @user_type_required(['admin'])
 def dashboard(request):
@@ -73,37 +75,23 @@ def list_users(request):
 
 @login_required
 @user_type_required(['admin'])
-def create_user(request):
+def create_update_user(request, pk=None):
+    if pk:
+        user = get_object_or_404(User, pk=pk)
+        form = UserForm(request.POST or None, instance=user)
+    else:
+        form = UserForm(request.POST or None)
+
     if request.method == 'POST':
-        form = UserFormAdmin(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Your user has been created/updated successfully.')
             return redirect('list_users')
-    else:
-        form = UserFormAdmin()
-    return render(request, 'admin/create_user.html', {'form': form})
+        else:
+            messages.error(request, 'There was an error with your submission. Please check the form for details.')
 
-@login_required
-@user_type_required(['admin'])
-def update_user(request, pk):
-    user = get_object_or_404(User, pk=pk)
-    if request.method == 'POST':
-        form = UserFormAdmin(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect('list_users')
-    else:
-        form = UserFormAdmin(instance=user)
-    return render(request, 'admin/update_user.html', {'form': form})
+    return render(request, 'admin/create_update_user.html', {'form': form})
 
-@login_required
-@user_type_required(['admin'])
-def delete_user(request, pk):
-    user = get_object_or_404(User, pk=pk)
-    if request.method == 'POST':
-        user.delete()
-        return redirect('list_users')
-    return render(request, 'admin/delete_user.html', {'user': user})
 
 # Lesson views
 @login_required
@@ -116,92 +104,55 @@ def list_lessons(request):
     student_filter = request.GET.get('student')
     subject_filter = request.GET.get('subject')
     tutor_filter = request.GET.get('tutor')
-    date_filter = request.GET.get('date')
     duration_filter = request.GET.get('duration')
+    recurrece_filter = request.GET.get('recurrence')
 
     if status_filter: lessons = lessons.filter(status=status_filter)
     if student_filter: lessons = lessons.filter(student__id=student_filter)
     if subject_filter: lessons = lessons.filter(subject=subject_filter)
     if tutor_filter: lessons = lessons.filter(tutor=tutor_filter)
-    if date_filter: lessons = lessons.filter(date__date=date_filter)
     if duration_filter: lessons = lessons.filter(duration=duration_filter)
+    if recurrece_filter: lessons = lessons.filter(recurrence=recurrece_filter)
 
     # Searching
     search_query = request.GET.get('search')
     if search_query:
-        lessons = lessons.filter(Q(student__username__icontains=search_query) | Q(subject__icontains=search_query) | Q(tutor__icontains=search_query))
+        lessons = lessons.filter(Q(student__username__icontains=search_query) | Q(subject__name__icontains=search_query) | Q(tutor__username__icontains=search_query))
 
     # Ordering
     order_by = request.GET.get('order_by', 'date')
     lessons = lessons.order_by(order_by)
 
     # Get values for dropdowns
-    students = User.objects.filter(type='student').distinct()
-    students_with_lessons = Lesson.objects.filter(date__gte=timezone.now()).values_list('student', flat=True).distinct()
-    students_with_lessons = User.objects.filter(id__in=students_with_lessons)
-    subjects = Lesson.objects.filter(date__gte=timezone.now()).values_list('subject', flat=True).distinct()
-    tutors = User.objects.filter(type='tutor').distinct()
-    tutors_with_lessons = Lesson.objects.filter(date__gte=timezone.now()).values_list('tutor', flat=True).distinct()
+    students_with_lessons = User.objects.filter(id__in=Lesson.objects.filter(date__gte=timezone.now()).values_list('student', flat=True).distinct()).order_by('username')
+    subjects = Subject.objects.filter(id__in=Lesson.objects.filter(date__gte=timezone.now()).values_list('subject', flat=True).distinct()).order_by('name')
+    tutors_with_lessons = User.objects.filter(id__in=Lesson.objects.filter(date__gte=timezone.now()).values_list('tutor', flat=True).distinct()).order_by('username')
     durations = Lesson.objects.filter(date__gte=timezone.now()).values_list('duration', flat=True).distinct()
+    recurrences = Lesson.objects.filter(date__gte=timezone.now()).values_list('recurrence', flat=True).distinct()
     
-    context = {'lessons': lessons, 'order_by': order_by, 'students': students, 'students_with_lessons': students_with_lessons, 'subjects': subjects, 'tutors': tutors, 'tutors_with_lessons': tutors_with_lessons, 'durations': durations}
+    context = {'lessons': lessons, 'order_by': order_by, 'students_with_lessons': students_with_lessons, 'subjects': subjects, 'tutors_with_lessons': tutors_with_lessons, 'durations': durations, 'recurrences': recurrences}
 
     return render(request, 'admin/list_lessons.html', context)
 
 @login_required
 @user_type_required(['admin'])
-def create_lesson(request):
-    if request.method == 'POST':
-        form = LessonForm(request.POST)
-        if form.is_valid():
-            try:
-                lesson = form.save(commit=False)
-                lesson.status = 'Approved'
-                
-                # Check for overlapping lessons
-                lesson_end_time = lesson.date + timedelta(minutes=lesson.duration)
-                overlapping_lessons = Lesson.objects.filter(student=lesson.student, date__lt=lesson_end_time, date__gte=lesson.date)
-                if overlapping_lessons.exists():
-                    overlapping_details = ', '.join([f"{ol.subject} on {ol.date.strftime('%Y-%m-%d %H:%M')}" for ol in overlapping_lessons])
-                    messages.error(request, f'The lesson time overlaps with an existing lesson: {overlapping_details}')
-                    return render(request, 'admin/create_lesson.html', {'form': form})
-
-                lesson.save()
-
-                messages.success(request, 'Your lesson has been created and approved.')
-                return redirect('list_lessons')
-            except Exception as e:
-                messages.error(request, f'There was an error saving your lesson: {str(e)}')
-                return render(request, 'admin/create_lesson.html', {'form': form})
-        else:
-            messages.error(request, 'There was an error with your submission. Please check the form for details.')
-            return render(request, 'admin/create_lesson.html', {'form': form})
+def create_update_lesson(request, pk=None):
+    """Create or update a lesson."""
+    if pk:
+        lesson = get_object_or_404(Lesson, pk=pk)
+        form = LessonForm(request.POST or None, instance=lesson)
     else:
-        form = LessonForm()
-    
-    return render(request, 'admin/create_lesson.html', {'form': form})
+        form = LessonForm(request.POST or None)
 
-@login_required
-@user_type_required(['admin'])
-def update_lesson(request, pk):
-    lesson = get_object_or_404(Lesson, pk=pk)
     if request.method == 'POST':
-        form = LessonForm(request.POST, instance=lesson)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Your lesson has been created/updated successfully.')
             return redirect('list_lessons')
-    else:
-        form = LessonForm(instance=lesson)
-    return render(request, 'admin/update_lesson.html', {'form': form})
+        else:
+            messages.error(request, 'There was an error with your submission. Please check the form for details.')
 
-@login_required
-@user_type_required(['admin'])
-def delete_lesson(request, pk):
-    lesson = get_object_or_404(Lesson, pk=pk)
-    if request.method == 'POST':
-        lesson.delete()
-        return redirect('list_lessons')
-    return render(request, 'admin/delete_lesson.html', {'lesson': lesson})
+    return render(request, 'admin/create_update_lesson.html', {'form': form})
 
 
 # Invoice views
@@ -223,12 +174,11 @@ def list_invoices(request):
         invoices = invoices.filter(Q(student__username__icontains=search_query) | Q(amount__icontains=search_query))
 
     # Ordering
-    order_by = request.GET.get('order_by', 'issued_date')
+    order_by = request.GET.get('order_by', 'due_date')
     invoices = invoices.order_by(order_by)
 
     # Get distinct values for dropdowns
-    students = Invoice.objects.values_list('student', flat=True).distinct()
-    students = User.objects.filter(id__in=students)
+    students = User.objects.filter(id__in=Invoice.objects.values_list('student', flat=True).distinct()).order_by('username')
 
     context = {
         'invoices': invoices,
@@ -240,37 +190,45 @@ def list_invoices(request):
 
 @login_required
 @user_type_required(['admin'])
-def create_invoice(request):
+def create_update_invoice(request, pk=None):
+    if pk:
+        invoice = get_object_or_404(Invoice, pk=pk)
+        form = InvoiceForm(request.POST or None, instance=invoice)
+    else:
+        model_name = request.GET.get('model')
+        pk = request.GET.get('pk')
+        
+        if model_name and pk:
+            model = apps.get_model('tutorials', model_name)
+            obj = get_object_or_404(model, pk=pk)
+            
+            student, lesson, amount, due_date, paid = None, None, 0, None, False
+            if model_name == 'Lesson':
+                student = obj.student
+                lesson = obj
+                amount = calculate_invoice_amount(obj)
+                due_date = obj.date
+            elif model_name == 'User':
+                student = obj
+            elif model_name == 'Notification':
+                student = obj.user
+            else:
+                pass
+            
+            initial_data = {'student': student, 'lesson': lesson, 'amount': amount, 'due_date': due_date, 'paid': paid}
+        else:
+            initial_data = {}
+        
+        form = InvoiceForm(request.POST or None, initial=initial_data)
+
     if request.method == 'POST':
-        form = InvoiceForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('list_invoices')
-    else:
-        form = InvoiceForm()
-    return render(request, 'admin/create_invoice.html', {'form': form})
+        else:
+            messages.error(request, 'There was an error with your submission. Please check the form for details.')
 
-@login_required
-@user_type_required(['admin'])
-def update_invoice(request, pk):
-    invoice = get_object_or_404(Invoice, pk=pk)
-    if request.method == 'POST':
-        form = InvoiceForm(request.POST, instance=invoice)
-        if form.is_valid():
-            form.save()
-            return redirect('list_invoices')
-    else:
-        form = InvoiceForm(instance=invoice)
-    return render(request, 'admin/update_invoice.html', {'form': form})
-
-@login_required
-@user_type_required(['admin'])
-def delete_invoice(request, pk):
-    invoice = get_object_or_404(Invoice, pk=pk)
-    if request.method == 'POST':
-        invoice.delete()
-        return redirect('list_invoices')
-    return render(request, 'admin/delete_invoice.html', {'invoice': invoice})
+    return render(request, 'admin/create_update_invoice.html', {'form': form})
 
 
 # Notification views
@@ -296,9 +254,8 @@ def list_notifications(request):
     notifications = notifications.order_by(order_by)
 
     # Get distinct values for dropdowns
-    users = Notification.objects.values_list('user', flat=True).distinct()
-    users = User.objects.filter(id__in=users)
-
+    users = User.objects.filter(id__in=Notification.objects.values_list('user', flat=True).distinct()).order_by('username')
+    
     context = {
         'notifications': notifications,
         'order_by': order_by,
@@ -310,29 +267,63 @@ def list_notifications(request):
 @login_required
 @user_type_required(['admin'])
 def create_notification(request):
-    user_id = request.GET.get('user')
-    message = request.GET.get('message')
+    model_name = request.GET.get('model')
+    pk = request.GET.get('pk')
     
+    if model_name and pk:
+        model = apps.get_model('tutorials', model_name)
+        obj = get_object_or_404(model, pk=pk)
+        
+        if model_name == 'Invoice':
+            user = obj.student
+            if obj.paid:
+                message = f"Your invoice {obj.pk} for {obj.amount} has been paid"
+            elif obj.is_overdue():
+                message = f"You have faild to pay your invoice {obj.pk} for {obj.amount} before {obj.due_date.strftime('%d/%m/%Y')} and it is now overdue, this may affect your ability to book lessons"
+            else:
+                message = f"Reminder that you need to pay your invoice {obj.pk} for {obj.amount} before {obj.date.strftime('%d/%m/%Y at %H:%M')}"
+        elif model_name == 'Lesson':
+            user = obj.student
+            if obj.status == 'Approved' and obj.is_assigned:
+                message = f"Your lesson request for {obj.subject} on {obj.date.strftime('%d/%m/%Y at %H:%M')} has been approved with {obj.tutor}"
+            elif obj.status == 'Approved' and not obj.is_assigned:
+                message = f"Your lesson request for {obj.subject} on {obj.date.strftime('%d/%m/%Y at %H:%M')} has been approved, but no tutor has been assigned yet"
+            elif obj.status == 'Pending':
+                message = f"Your lesson request for {obj.subject} on {obj.date.strftime('%d/%m/%Y at %H:%M')} is currently pending approval"
+            elif obj.status == 'Rejected':
+                message = f"Your lesson request for {obj.subject} on {obj.date.strftime('%d/%m/%Y at %H:%M')} has been rejected"
+        elif model_name == 'User':
+            user = obj
+            message = ""
+        else:
+            user = None
+            message = ""
+        
+        initial_data = {'user': user, 'message': message}
+    else:
+        initial_data = {}
+
     if request.method == 'POST':
         form = NotificationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('list_notifications')
+            if model_is_valid(model_name):
+                return redirect(f'list_{model_name.lower()}s')
+            else:
+                return redirect('list_notifications')
     else:
-        initial_data = {}
-        if user_id:
-            initial_data['user'] = get_object_or_404(User, pk=user_id)
-        if message:
-            initial_data['message'] = message
         form = NotificationForm(initial=initial_data)
     
     return render(request, 'admin/create_notification.html', {'form': form})
 
+
+# Delete object model
 @login_required
 @user_type_required(['admin'])
-def delete_notification(request, pk):
-    notification = get_object_or_404(Notification, pk=pk)
+def delete_object(request, model_name, pk):
+    model = apps.get_model('tutorials', model_name)
+    obj = get_object_or_404(model, pk=pk)
     if request.method == 'POST':
-        notification.delete()
-        return redirect('list_notifications')
-    return render(request, 'admin/delete_notification.html', {'notification': notification})
+        obj.delete()
+        return redirect(f'list_{model_name.lower()}s')
+    return render(request, 'admin/delete_object.html', {'object': obj, 'model_name': model_name.lower()})

@@ -2,13 +2,12 @@ from django.contrib.auth.decorators import login_required
 from tutorials.decorators import user_type_required
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
-from django.utils import timezone
 from tutorials.models import Lesson, Invoice, Notification
 from calendar import monthrange
-from datetime import datetime, timedelta
+from datetime import datetime
 from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
-from tutorials.forms import LessonRequestForm
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
+from tutorials.forms import RequestForm
 
 
 @login_required
@@ -16,16 +15,31 @@ from tutorials.forms import LessonRequestForm
 def dashboard(request):
     """Display the student dashboard"""
     user = request.user
-    upcoming_lessons = Lesson.objects.filter(student=user, date__gte=timezone.now(), status="Approved").order_by('date')[:5]
-    unpaid_invoices = Invoice.objects.filter(student=user, paid=False)
-    notifications = Notification.objects.filter(user=user, is_read=False)
+    lessons = Lesson.objects.filter(student=user, status="Approved")
+    upcoming_lessons = []
+    for lesson in lessons:
+        if lesson.is_upcoming():
+            upcoming_lessons.append(lesson)
+    unread_notifications = Notification.objects.filter(user=user, is_read=False)
     
     context = {
         'user': user,
         'upcoming_lessons': upcoming_lessons,
-        'unpaid_invoices': unpaid_invoices,
+        'unread_notifications': unread_notifications,
     }
     return render(request, 'student/dashboard.html', context)
+
+# Lesson views
+@login_required
+def lessons(request):
+    """View all upcoming lessons for the logged-in student."""
+    user = request.user
+    lessons = Lesson.objects.filter(student=user, status="Approved")
+    upcoming_lessons = []
+    for lesson in lessons:
+        if lesson.is_upcoming():
+            upcoming_lessons.append(lesson)
+    return render(request, 'student/list_lessons.html', {'lessons': upcoming_lessons})
 
 @login_required
 @user_type_required(['student'])
@@ -36,7 +50,12 @@ def schedule(request, year=None, month=None):
     year = year or today.year
     month = month or today.month
     # Get lessons for the given month
-    lessons = Lesson.objects.filter(student=user, date__year=year, date__month=month)
+    all_lessons = Lesson.objects.filter(student=user, status="Approved")
+    lessons = []
+    for lesson in all_lessons:
+        for date in lesson.lesson_dates():
+            if date.year == year and date.month == month:
+                lessons.append(lesson)
 
     # Generate calendar structure
     days_in_month = monthrange(year, month)[1]
@@ -45,7 +64,8 @@ def schedule(request, year=None, month=None):
     week = [None] * first_day_of_month
 
     for day in range(1, days_in_month + 1):
-        day_lessons = [lesson for lesson in lessons if lesson.date.day == day]
+        day_lessons = [lesson for lesson in lessons if any(date.date() == datetime(year, month, day).date() for date in lesson.lesson_dates())]
+        day_lessons = list(set(day_lessons))
         week.append({"day": day, "lessons": day_lessons})
         if len(week) == 7:
             calendar.append(week)
@@ -66,104 +86,38 @@ def schedule(request, year=None, month=None):
     }
     return render(request, 'student/view_schedule.html', context)
 
+
+# Lesson request views
 @login_required
 @user_type_required(['student'])
 def requests(request):
     """View all requested lessons for the logged-in student."""
     user = request.user
-    lessons = Lesson.objects.filter(student=user, date__gte=timezone.now()).order_by('date')
+    lessons = Lesson.objects.filter(student=user).order_by('date')
     return render(request, 'student/list_requests.html', {'lessons': lessons})
 
 @login_required
-def lessons(request):
-    """View all upcoming lessons for the logged-in student."""
-    user = request.user
-    lessons = Lesson.objects.filter(student=user, date__gte=timezone.now(), status="Approved").order_by('date')
-    return render(request, 'student/list_lessons.html', {'lessons': lessons})
-
-
-@login_required
 @user_type_required(['student'])
-def request_lesson(request):
-    if request.method == 'POST':
-        form = LessonRequestForm(request.POST)
-        if form.is_valid():
-            try:
-                lesson = form.save(commit=False)
-                lesson.status = 'Pending'
-                lesson.student = request.user
-                lesson.date = form.cleaned_data.get('preferred_date')
-                
-                # Check for overlapping lessons
-                lesson_end_time = lesson.date + timedelta(minutes=lesson.duration)
-                overlapping_lessons = Lesson.objects.filter(student=lesson.student, date__lt=lesson_end_time, date__gte=lesson.date)
-                if overlapping_lessons.exists():
-                    overlapping_details = ', '.join([f"{ol.subject} on {ol.date.strftime('%Y-%m-%d %H:%M')}" for ol in overlapping_lessons])
-                    messages.error(request, f'The requested lesson time overlaps with an existing lesson: {overlapping_details}')
-                    return render(request, 'student/create_request.html', {'form': form})
-
-                lesson.save()
-
-                # Handle recurrence
-                recurrence = form.cleaned_data.get('recurrence')
-                end_date = form.cleaned_data.get('end_date')
-                if recurrence and recurrence != 'None' and end_date:
-                    recurrence_map = {'Daily': timedelta(days=1), 'Weekly': timedelta(weeks=1), 'Monthly': timedelta(month=1)}
-                    delta = recurrence_map[recurrence]
-                    current_date = lesson.date
-                    while True:
-                        new_date = current_date + delta
-
-                        if new_date.date() > end_date:
-                            break
-                        
-                        lesson_end_time = new_date + timedelta(minutes=lesson.duration)
-                        overlapping_lessons = Lesson.objects.filter(student=lesson.student, date__lt=lesson_end_time, date__gte=new_date)
-                        if overlapping_lessons.exists():
-                            continue
-
-                        if not Lesson.objects.filter(date=new_date).exists():
-                            Lesson.objects.create(
-                                student=lesson.student,
-                                subject=lesson.subject,
-                                date=new_date,
-                                duration=lesson.duration,
-                                tutor=lesson.tutor,
-                                status='Pending',
-                                notes=lesson.notes,
-                            )
-                        
-                        current_date = new_date
-
-                messages.success(request, 'Your lesson request has been submitted and is currently pending approval.')
-                return redirect('student_requests')
-            except Exception as e:
-                messages.error(request, f'There was an error saving your lesson request: {str(e)}')
-                return render(request, 'student/create_request.html', {'form': form})
-        else:
-            messages.error(request, 'There was an error with your submission. Please check the form for details.')
-            return render(request, 'student/create_request.html', {'form': form})
+def create_update_request(request, pk=None):
+    """Create or update a lesson request."""
+    if pk:
+        lesson = get_object_or_404(Lesson, pk=pk, student=request.user)
+        form = RequestForm(request.POST or None, instance=lesson)
     else:
-        form = LessonRequestForm()
-    
-    return render(request, 'student/create_request.html', {'form': form})
+        form = RequestForm(request.POST or None, instance=Lesson(student=request.user))
 
-
-@login_required
-@user_type_required(['student'])
-def update_request(request, pk):
-    """Update the details of an existing lesson."""
-    lesson = get_object_or_404(Lesson, id=pk, student=request.user)
     if request.method == 'POST':
-        form = LessonRequestForm(request.POST, instance=lesson)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Your lesson has been updated successfully.')
+            if pk:
+                messages.success(request, 'Your lesson request has been updated successfully.')
+            else:
+                messages.success(request, 'Your lesson request has been submitted and is currently pending approval.')
             return HttpResponseRedirect(reverse('student_requests'))
-    else:
-        form = LessonRequestForm(instance=lesson)
-    return render(request, 'student/update_request.html', {'form': form, 'lesson': lesson})
+        else:
+            messages.error(request, 'There was an error with your submission. Please check the form for details.')
 
+    return render(request, 'student/create_update_request.html', {'form': form})
 
 @login_required
 @user_type_required(['student'])
@@ -184,10 +138,11 @@ def delete_request(request, pk):
         return HttpResponseBadRequest('This URL only supports GET and POST requests.')
 
 
+# Invoice views
 @login_required
 @user_type_required(['student'])
 def invoices(request):
     """View all invoices for the logged-in student."""
-    invoices = Invoice.objects.filter(student=request.user).order_by('-issued_date')
+    invoices = Invoice.objects.filter(student=request.user).order_by('-due_date')
     return render(request, 'student/list_invoices.html', {'invoices': invoices})
 

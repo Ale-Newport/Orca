@@ -4,6 +4,8 @@ from django.core.validators import RegexValidator, MinValueValidator, MaxValueVa
 from django.core.exceptions import ValidationError
 from libgravatar import Gravatar
 from django.conf import settings
+from tutorials.helpers import calculate_lesson_dates
+from django.utils import timezone
 
 
 class Subject(models.Model):
@@ -44,6 +46,13 @@ class User(AbstractUser):
     class Meta:
         """Model options."""
         ordering = ['last_name', 'first_name']
+    
+    def clean(self):
+        super().clean()
+        """Ensure that the admin user has staff and superuser permissions."""
+        if self.type == 'admin':
+            self.is_staff = True
+            self.is_superuser = True
 
     def full_name(self):
         """Return a string containing the user's full name."""
@@ -61,15 +70,9 @@ class User(AbstractUser):
     def mini_gravatar(self):
         """Return a URL to a miniature version of the user's gravatar."""
         return self.gravatar(size=60)
-    
-    def clean(self):
-        if self.type == 'tutor' and self.subjects.count() == 0:
-            raise ValidationError('Tutors must teach at least one subject.')
-        if not self.type == 'tutor' and not self.subjects.count() == 0:
-            raise ValidationError('Only tutors can have subject.')
         
     def __str__(self):
-        return self.username
+        return self.username[1:] if self.username.startswith('@') else self.username
 
 
 class Lesson(models.Model):
@@ -86,11 +89,11 @@ class Lesson(models.Model):
         ('Monthly', 'Monthly'),
     ]
 
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lessons")
+    student = models.ForeignKey(User, limit_choices_to={'type': 'student'}, on_delete=models.CASCADE, related_name="lessons")
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, blank=False)
-    tutor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    tutor = models.ForeignKey(User, limit_choices_to={'type': 'tutor'}, on_delete=models.SET_DEFAULT, default=None, null=True)
     date = models.DateTimeField()
-    duration = models.PositiveIntegerField(validators=[MinValueValidator(30), MaxValueValidator(240)])
+    duration = models.PositiveIntegerField(validators=[MinValueValidator(30), MaxValueValidator(240), RegexValidator(regex=r'^[1-9][0-9]*[05]$|^[1-9][0-9]*0$', message='Duration must be in 15 minute increments.')])
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     recurrence = models.CharField(max_length=10, choices=RECURRENCE_CHOICES, default='None')
     recurrence_end_date = models.DateField(blank=True, null=True)
@@ -98,9 +101,39 @@ class Lesson(models.Model):
     def is_assigned(self):
         """Return True if a tutor has been assigned."""
         return self.tutor is not None
-
     is_assigned.boolean = True
     is_assigned.short_description = 'Assigned?'
+
+    def lesson_dates(self):
+        """Return a list of all lesson dates."""
+        return calculate_lesson_dates(self.date, self.recurrence_end_date, self.recurrence)
+    lesson_dates.short_description = 'Lesson Dates'
+
+    def is_upcoming(self):
+        """Return True if the lesson is upcoming."""
+        return self.next_lesson() != None
+    is_upcoming.boolean = True
+    is_upcoming.short_description = 'Upcoming?'
+
+    def next_lesson(self):
+        """Return the next lesson date."""
+        for date in self.lesson_dates():
+            if date > timezone.now():
+                return date
+        return None
+    next_lesson.short_description = 'Next Lesson'
+
+    def paid(self):
+        """Return True if the lesson has been paid for."""
+        return Invoice.objects.filter(lesson=self, paid=True).exists()
+    is_assigned.boolean = True
+    is_assigned.short_description = 'Paid?'
+
+    def has_invoice(self):
+        """Return True if the lesson has been has an invoice."""
+        return Invoice.objects.filter(lesson=self).exists()
+    is_assigned.boolean = True
+    is_assigned.short_description = 'Invoice?'
 
     def clean(self):
         """Ensure that the lesson date and recurrence end date are valid."""
@@ -108,7 +141,7 @@ class Lesson(models.Model):
             raise ValidationError('Recurrence end date must be set for recurring lessons.')
         if self.recurrence_end_date and self.recurrence == 'None':
             raise ValidationError('Recurrence must be set to have a recurrence end date.')
-        if self.recurrence_end_date and self.recurrence_end_date < self.date.date():
+        if self.recurrence_end_date and self.date and self.recurrence_end_date < self.date.date():
             raise ValidationError('Recurrence end date must be after the lesson date.')
         """Ensure that the duration is valid."""
         if self.duration % 15 != 0:
@@ -118,25 +151,28 @@ class Lesson(models.Model):
         """Ensure that the student is a student and the tutor is a tutor."""
         if self.student.type != 'student':
             raise ValidationError('The student must be a user of type student.')
-        if self.tutor and self.tutor.type != 'tutor':
+        if self.is_assigned() and self.tutor.type != 'tutor':
             raise ValidationError('The tutor must be a user of type tutor.')
 
     def __str__(self):
-        return f"{self.subject} with {self.student} on {self.date}"
-
+        return f"{self.subject} with {self.student} on {self.date.strftime('%d/%m/%Y %H:%M')}"
 
 
 class Invoice(models.Model):
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='invoices')
+    student = models.ForeignKey(User, limit_choices_to={'type': 'student'}, on_delete=models.CASCADE, related_name='invoices')
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, related_name='invoices')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     due_date = models.DateField()
     paid = models.BooleanField(default=False)
 
+    def is_overdue(self):
+        """Return True if the invoice is overdue."""
+        return not self.paid and self.due_date < timezone.now().date()
+
     def clean(self):
         """Ensure that the amount is greater than or equal to zero."""
         if self.amount < 0:
-            raise ValidationError('Amount must be greater or equal to zero.')
+            raise ValidationError('Amount must be greater or equal to 0.')
         """Ensure that the student matches the lesson student."""
         if self.student.type != 'student':
             raise ValidationError('The student must be a user of type student.')
@@ -145,6 +181,7 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"Invoice {self.id} for {self.student} - {'Paid' if self.paid else 'Unpaid'}"
+
 
 class Notification(models.Model):
     """Model to store notifications for users."""
