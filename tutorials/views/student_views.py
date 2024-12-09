@@ -14,6 +14,8 @@ from tutorials.forms import RequestForm
 @user_type_required(['student'])
 def dashboard(request):
     """Display the student dashboard"""
+
+    # Get student's dashboard data
     user = request.user
     lessons = Lesson.objects.filter(student=user, status="Approved")
     upcoming_lessons = []
@@ -44,6 +46,7 @@ def lessons(request):
 @login_required
 @user_type_required(['student'])
 def schedule(request, year=None, month=None):
+    """View the student's lesson schedule for the given month."""
     user = request.user
     # Use current year and month if not provided
     today = datetime.today()

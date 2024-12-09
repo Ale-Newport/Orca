@@ -14,17 +14,25 @@ from django.apps import apps
 @user_type_required(['admin'])
 def dashboard(request):
     """Display the admin dashboard"""
+
+    # Users
     total_users = User.objects.count()
     student_users = User.objects.filter(type='student').count()
     tutor_users = User.objects.filter(type='tutor').count()
     admin_users = User.objects.filter(type='admin').count()
+
+    # Lessons
     total_lessons = Lesson.objects.filter(date__gte=timezone.now()).count()
     approved_lessons = Lesson.objects.filter(status='Approved', date__gte=timezone.now()).count()
     pending_lessons = Lesson.objects.filter(status='Pending', date__gte=timezone.now()).count()
     rejected_lessons = Lesson.objects.filter(status='Rejected', date__gte=timezone.now()).count()
+
+    # Invoice counts
     total_invoices = Invoice.objects.count()
     paid_invoices = Invoice.objects.filter(paid=True).count()
     unpaid_invoices = Invoice.objects.filter(paid=False).count()
+
+    # Notification counts
     total_notifications = Notification.objects.count()
     read_notifications = Notification.objects.filter(is_read=True).count()
     unread_notifications = Notification.objects.filter(is_read=False).count()
@@ -53,16 +61,16 @@ def dashboard(request):
 def list_users(request):
     users = User.objects.all()
 
-    # Filtering
+    # Handle filtering
     type_filter = request.GET.get('type')
     if type_filter: users = users.filter(type=type_filter)
 
-    # Searching
+    # Handle searching
     search_query = request.GET.get('search')
     if search_query:
         users = users.filter(Q(username__icontains=search_query) | Q(email__icontains=search_query) | Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query))
 
-    # Ordering
+    # Handle searching
     order_by = request.GET.get('order_by', 'username')
     users = users.order_by(order_by)
 
@@ -188,6 +196,7 @@ def list_invoices(request):
 
     return render(request, 'admin/list_invoices.html', context)
 
+# Handles invoice creation
 @login_required
 @user_type_required(['admin'])
 def create_update_invoice(request, pk=None):
@@ -264,6 +273,7 @@ def list_notifications(request):
 
     return render(request, 'admin/list_notifications.html', context)
 
+# Notification handling
 @login_required
 @user_type_required(['admin'])
 def create_notification(request):

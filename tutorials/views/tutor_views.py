@@ -5,7 +5,7 @@ from calendar import monthrange
 from datetime import datetime
 from tutorials.decorators import user_type_required
 
-
+# Display tutor dashboard with upcoming lessons
 @login_required
 @user_type_required(['tutor'])
 def dashboard(request):
@@ -39,6 +39,7 @@ def lessons(request):
             upcoming_lessons.append(lesson)
     return render(request, 'tutor/tutor_lessons.html', {'lessons': upcoming_lessons})
 
+# monthly calendar view
 @login_required
 @user_type_required(['tutor'])
 def schedule(request, year=None, month=None):

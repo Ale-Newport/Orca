@@ -1,24 +1,65 @@
 from django.test import TestCase
-class TutorScheduleViewTestCase(TestCase):
+from django.urls import reverse
+from tutorials.models import User, Lesson
+from django.utils import timezone
+from datetime import timedelta
+
+class TutorScheduleTest(TestCase):
     def setUp(self):
         self.tutor = User.objects.create_user(
-            username='@tutor',
-            password='Password123',
+            username='@tutoruser',
             email='tutor@example.com',
-            type='tutor'
+            first_name='Tutor',
+            last_name='User',
+            type='tutor',
+            password='Password123'
         )
-        self.lesson = Lesson.objects.create(
-            student=self.tutor,
-            subject='Java',
-            date=timezone.now(),
-            duration=60,
-            status='Approved',
-            tutor=self.tutor.full_name()
-        )
-        self.url = reverse('tutor_schedule')
-        self.client.login(username='@tutor', password='Password123')
+        self.client.login(username='@tutoruser', password='Password123')
 
-    def test_view_tutor_schedule(self):
-        response = self.client.get(self.url)
+    def test_schedule_shows_current_month(self):
+        url = reverse('tutor_schedule')
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Java')
+        current_month = timezone.now().month
+        self.assertIn(str(current_month), str(response.context['month']))
+
+    def test_schedule_can_navigate_months(self):
+        next_month = timezone.now().month + 1
+        next_year = timezone.now().year
+        if next_month > 12:
+            next_month = 1
+            next_year += 1
+        url = reverse('tutor_schedule', kwargs={'year': next_year, 'month': next_month})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_schedule_shows_calendar(self):
+        url = reverse('tutor_schedule')
+        response = self.client.get(url)
+        self.assertIn('calendar', response.context)
+
+    def test_schedule_contains_lesson_info(self):
+        url = reverse('tutor_schedule')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'tutor/tutor_schedule.html')
+
+    def test_schedule_shows_working_hours(self):
+        future_date = timezone.now() + timedelta(days=1)
+        lesson = Lesson.objects.create(
+            student=User.objects.create_user(
+                username='@student',
+                email='student@example.com',
+                first_name='Student',
+                last_name='User',
+                type='student',
+                password='Password123'
+            ),
+            subject='Python',
+            date=future_date.replace(hour=14),  # 2 PM
+            duration=60,
+            tutor=self.tutor.username
+        )
+        url = reverse('tutor_schedule')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)

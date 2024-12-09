@@ -11,11 +11,13 @@ from tutorials.forms import LogInForm, PasswordForm, SignUpForm, ProfileForm
 from tutorials.models import Notification
 from tutorials.helpers import login_prohibited
 
+# Landing page - only visible to users that are not logged in
 @login_prohibited
 def home(request):
     """Display the application's home screen."""
     return render(request, 'base/home.html')
 
+# Prevent non authenticated users from acessing certain pages
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
 
@@ -27,14 +29,16 @@ class LoginProhibitedMixin:
             return self.handle_already_logged_in(*args, **kwargs)
         return super().dispatch(*args, **kwargs)
 
+    # Route users to corresponding page
     def handle_already_logged_in(self, *args, **kwargs):
+        """Handle when user is already logged in."""
         user = self.request.user
         if user.type == 'admin':
-            return redirect('admin:index')
+            return redirect('admin_dashboard')
         elif user.type == 'tutor':
             return redirect('tutor_dashboard')
         else:
-            return redirect('dashboard')
+            return redirect('student_dashboard')
 
     def get_redirect_when_logged_in_url(self):
         """Returns the url to redirect to when not logged in."""
@@ -67,14 +71,13 @@ class PasswordView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        """Redirect the user after successful password change."""
+        """Return redirect URL after successful password change."""
         user = self.request.user
         if user.type == 'admin':
             return reverse('admin_dashboard')
         elif user.type == 'tutor':
             return reverse('tutor_dashboard')
-        else:
-            return reverse('student_dashboard')
+        return reverse('student_dashboard')
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     """Display user profile editing screen, and handle profile modifications."""
@@ -100,8 +103,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
             return reverse('admin_dashboard')
         elif user.type == 'tutor':
             return reverse('tutor_dashboard')
-        else:
-            return reverse('student_dashboard')
+        return reverse('student_dashboard')
 
 class SignUpView(LoginProhibitedMixin, FormView):
     """Display the sign up screen and handle sign ups."""
@@ -116,7 +118,7 @@ class SignUpView(LoginProhibitedMixin, FormView):
 
     def get_success_url(self):
         """Return the redirect URL based on user type."""
-        user = self.object
+        user = self.object  # self.object is set in form_valid
         if user.type == 'admin':
             return reverse('admin_dashboard')
         elif user.type == 'tutor':
@@ -128,30 +130,53 @@ class LogInView(LoginProhibitedMixin, View):
     """Display login screen and handle user login."""
     http_method_names = ['get', 'post']
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.next = None
+
     def get(self, request):
         """Display log in template."""
-        self.next = request.GET.get('next') or ''
+        self.next = request.GET.get('next', '')
         return self.render()
 
     def post(self, request):
         """Handle log in attempt."""
         form = LogInForm(request.POST)
+        
+        if not request.POST.get('username'):
+            messages.error(request, "Username field cannot be blank")
+            return self.render()
+            
+        if not request.POST.get('password'):
+            messages.error(request, "Password field cannot be blank")
+            return self.render()
+        
         if form.is_valid():
             user = form.get_user()
             if user is not None:
                 login(request, user)
-                return redirect(self.get_redirect_url(user))
+                return redirect(self.get_success_url())
             else:
-                messages.add_message(request, messages.ERROR, "The credentials provided were invalid!")
-        else:
-            messages.add_message(request, messages.ERROR, "Please correct the errors below.")
+                messages.error(request, "The credentials provided were invalid!")
         return self.render()
-
+    
+    def get_success_url(self):
+        """Return success URL after login."""
+        if self.next:
+            return self.next
+        user = self.request.user
+        if user.type == 'admin':
+            return reverse('admin_dashboard')
+        elif user.type == 'tutor':
+            return reverse('tutor_dashboard')
+        return reverse('student_dashboard')
+    
     def render(self):
-        """Render log in template with blank log in form."""
+        """Render login template."""
         form = LogInForm()
         return render(self.request, 'profile/log_in.html', {'form': form, 'next': self.next})
 
+    # Get dashboard URL based on user type
     def get_redirect_url(self, user):
         """Return the redirect URL based on user type."""
         if user.type == 'admin':
@@ -161,19 +186,20 @@ class LogInView(LoginProhibitedMixin, View):
         else:
             return reverse('student_dashboard')
 
-
+# Handle user logout
 def log_out(request):
     """Log out the current user"""
     logout(request)
     return redirect('home')
 
-
+# Display user's notification list
 @login_required
 def notifications(request):
     """View all notifications for the logged-in student."""
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'profile/list_notifications.html', {'notifications': notifications})
 
+# Toggle notification read status
 @login_required
 def mark_notification_read(request, pk):
     notification = get_object_or_404(Notification, id=pk)
