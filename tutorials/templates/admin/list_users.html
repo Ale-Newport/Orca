@@ -1,4 +1,4 @@
-{% extends 'base_content.html' %}
+{% extends 'base/base_content.html' %}
 
 {% block content %}
 <div class="container">
@@ -99,7 +99,7 @@
                 <td>
                     <a href="{% url 'update_user' user.pk %}"><i class="bi bi-pen-fill"></i></a>
                     &nbsp;&nbsp; 
-                    <a href="{% url 'delete_user' user.pk %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
+                    <a href="{% url 'delete_object' 'User' user.pk %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
                 </td>
             </tr>
             {% endfor %}

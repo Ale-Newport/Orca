@@ -1,7 +1,7 @@
-{% extends "base_content.html" %}
+{% extends 'base/base_content.html' %}
 {% block content %}
-<div class="container">
-    <h1 class="text-center">Schedule for {{ month }}/{{ year }}</h1>
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Schedule for {{ month }}/{{ year }}</h1>
 
     <div class="d-flex justify-content-between mb-3">
         <a href="{% url 'student_schedule' prev_year prev_month %}" class="btn btn-primary">Previous Month</a>

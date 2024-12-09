@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
-from tutorials.forms import LogInForm, PasswordForm, SignUpForm, UserForm, UserFormAdmin, UserFormTutor
+from tutorials.forms import LogInForm, PasswordForm, SignUpForm, ProfileForm
 from tutorials.models import Notification
 from tutorials.helpers import login_prohibited
 
@@ -15,7 +15,7 @@ from tutorials.helpers import login_prohibited
 @login_prohibited
 def home(request):
     """Display the application's home screen."""
-    return render(request, 'home.html')
+    return render(request, 'base/home.html')
 
 # Prevent non authenticated users from acessing certain pages
 class LoginProhibitedMixin:
@@ -53,7 +53,8 @@ class LoginProhibitedMixin:
 
 class PasswordView(LoginRequiredMixin, FormView):
     """Display password change screen and handle password change requests."""
-    template_name = 'password.html'
+
+    template_name = 'profile/password.html'
     form_class = PasswordForm
 
     def get_form_kwargs(self, **kwargs):
@@ -81,15 +82,15 @@ class PasswordView(LoginRequiredMixin, FormView):
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     """Display user profile editing screen, and handle profile modifications."""
 
-    template_name = "profile.html"
+    template_name = "profile/profile.html"
 
     def get_form_class(self):
         """Return the form class based on the user type."""
         user = self.request.user
         if user.type == 'tutor':
-            return UserFormTutor
+            return ProfileForm
         else:
-            return UserForm
+            return ProfileForm
 
     def get_object(self):
         """Return the object (user) to be updated."""
@@ -108,7 +109,7 @@ class SignUpView(LoginProhibitedMixin, FormView):
     """Display the sign up screen and handle sign ups."""
 
     form_class = SignUpForm
-    template_name = "sign_up.html"
+    template_name = "profile/sign_up.html"
 
     def form_valid(self, form):
         self.object = form.save()
@@ -173,7 +174,7 @@ class LogInView(LoginProhibitedMixin, View):
     def render(self):
         """Render login template."""
         form = LogInForm()
-        return render(self.request, 'log_in.html', {'form': form, 'next': self.next})
+        return render(self.request, 'profile/log_in.html', {'form': form, 'next': self.next})
 
     # Get dashboard URL based on user type
     def get_redirect_url(self, user):
@@ -196,7 +197,7 @@ def log_out(request):
 def notifications(request):
     """View all notifications for the logged-in student."""
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'student/list_notifications.html', {'notifications': notifications})
+    return render(request, 'profile/list_notifications.html', {'notifications': notifications})
 
 # Toggle notification read status
 @login_required

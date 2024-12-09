@@ -1,4 +1,4 @@
-{% extends 'base_content.html' %}
+{% extends 'base/base_content.html' %}
 
 {% block content %}
 <div class="container mt-5">
@@ -35,6 +35,15 @@
         <thead>
             <tr>
                 <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'id' %}order_by=-id{% else %}order_by=id{% endif %}">
+                        ID
+                        {% if request.GET.order_by == 'id' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-id' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                <th>
                     <a class="text-decoration-none" href="?{% if request.GET.order_by == 'student__username' %}order_by=-student__username{% else %}order_by=student__username{% endif %}">
                         Student
                         {% if request.GET.order_by == 'student__username' %}
@@ -45,21 +54,21 @@
                     </a>
                 </th>
                 <th>
-                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'amount' %}order_by=-amount{% else %}order_by=amount{% endif %}">
-                        Amount
-                        {% if request.GET.order_by == 'amount' %}
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'lesson__date' %}order_by=-lesson__date{% else %}order_by=lesson__date{% endif %}">
+                        Lesson
+                        {% if request.GET.order_by == 'lesson__date' %}
                             <i class="fa fa-angle-down"></i>
-                        {% elif request.GET.order_by == '-amount' %}
+                        {% elif request.GET.order_by == '-lesson__date' %}
                             <i class="fa fa-angle-up"></i>
                         {% endif %}
                     </a>
                 </th>
                 <th>
-                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'issued_date' %}order_by=-issued_date{% else %}order_by=issued_date{% endif %}">
-                        Issued Date
-                        {% if request.GET.order_by == 'issued_date' %}
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'amount' %}order_by=-amount{% else %}order_by=amount{% endif %}">
+                        Amount
+                        {% if request.GET.order_by == 'amount' %}
                             <i class="fa fa-angle-down"></i>
-                        {% elif request.GET.order_by == '-issued_date' %}
+                        {% elif request.GET.order_by == '-amount' %}
                             <i class="fa fa-angle-up"></i>
                         {% endif %}
                     </a>
@@ -90,9 +99,10 @@
         <tbody>
             {% for invoice in invoices %}
             <tr>
-                <td>{{ invoice.student.username }}</td>
+                <td>{{ invoice.id }}</td>
+                <td>{{ invoice.student }}</td>
+                <td>{{ invoice.lesson }}</td>
                 <td>{{ invoice.amount }}</td>
-                <td>{{ invoice.issued_date }}</td>
                 <td>{{ invoice.due_date }}</td>
                 <td>
                     {% if invoice.paid %}
@@ -103,10 +113,10 @@
                 </td>
                 <td>
                     <a href="{% url 'update_invoice' invoice.pk %}"><i class="bi bi-pen-fill"></i></a>
-                    &nbsp;&nbsp; 
-                    <a href="{% url 'delete_invoice' invoice.pk %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
-                    &nbsp;&nbsp; 
-                    <a href="{% url 'create_notification' %}?user={{ invoice.student.id }}&message={% if not invoice.paid %}Reminder%20that%20you%20need%20to%20pay%20your%20invoice%20{{ invoice.pk }}%20for%20{{ invoice.amount }}%20before%20{{ invoice.due_date }}{% else %}Your%20invoice%20{{ invoice.pk }}%20for%20{{ invoice.amount }}%20has%20been%20paid{% endif %}"><i class="fa-solid fa-envelope"></i></a>
+                    &nbsp;&nbsp;
+                    <a href="{% url 'create_notification' %}?model=Invoice&pk={{ invoice.pk }}"><i class="fa-solid fa-envelope"></i></a>
+                    &nbsp;&nbsp;
+                    <a href="{% url 'delete_object' 'Invoice' invoice.pk %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
                 </td>
             </tr>
             {% endfor %}

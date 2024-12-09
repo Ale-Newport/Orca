@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
-from .models import User, Lesson, Invoice, Subject, Notification
+from django.core.exceptions import ValidationError
+from tutorials.models import User, Subject, Lesson, Invoice, Notification
 from datetime import datetime, time, timedelta
+from tutorials.helpers import calculate_lesson_dates
 
 # Profile forms
 class LogInForm(forms.Form):
@@ -105,134 +107,202 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
 
 
 # Lessons forms
-class LessonRequestForm(forms.ModelForm):
-    preferred_date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={'type':'datetime-local'}), required=True)
-    duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15, 'min': 30, 'max': 240}), required=True)
-    recurrence = forms.ChoiceField(choices=[('None', 'None'), ('Daily', 'Daily'), ('Weekly', 'Weekly'), ('Monthly', 'Monthly')], required=False)
-    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date-local'}), required=False)
+class LessonForm(forms.ModelForm):
+    student = forms.ModelChoiceField(queryset=User.objects.filter(type='student').order_by('username'))
+    tutor = forms.ModelChoiceField(queryset=User.objects.filter(type='tutor').order_by('username'), required=False)
+    duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15, 'min': 30, 'max': 240}))
 
     class Meta:
         model = Lesson
-        fields = ['subject', 'preferred_date', 'duration', 'recurrence', 'end_date']
+        fields = ['student', 'tutor', 'subject', 'date', 'duration', 'status', 'recurrence', 'recurrence_end_date']
+        widgets = {
+            'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'recurrence_end_date': forms.DateInput(attrs={'type': 'date'}),
+        }
 
     def clean(self):
         cleaned_data = super().clean()
-        preferred_date = cleaned_data.get('preferred_date')
+        student = cleaned_data.get('student')
+        tutor = cleaned_data.get('tutor')
+        subject = cleaned_data.get('subject')
+        date = cleaned_data.get('date')
         duration = cleaned_data.get('duration')
         recurrence = cleaned_data.get('recurrence')
-        end_date = cleaned_data.get('end_date')
+        recurrence_end_date = cleaned_data.get('recurrence_end_date')
+        lesson_dates = calculate_lesson_dates(date, recurrence_end_date, recurrence)
 
-        # Ensure duration is in 15-minute intervals
-        if duration % 15 != 0:
-            self.add_error('duration', 'Please select a duration in 15-minute intervals.')
-        # Ensure duration is within a reasonable range
-        if duration < 30 or duration > 240:
-            self.add_error('duration', 'The duration must be at least 30 minutes and less than 240 minutes.')
-        # Ensure end_date is provided when recurrence is not 'None'
-        if recurrence != 'None' and not end_date:
-            self.add_error('end_date', 'Please enter an end date for the recurrence.')
-        # Ensure end_date is provided without a recurrence
-        if end_date and recurrence == 'None':
+        """Ensure that the lesson date and recurrence end date are valid."""
+        if recurrence != 'None' and not recurrence_end_date:
+            self.add_error('recurrence_end_date', 'Please enter an end date for the recurrence.')
+        if recurrence_end_date is not None and recurrence == 'None':
             self.add_error('recurrence', 'To have an end date you must select a recurrence type.')
-        # Ensure preferred_date is in the future
-        if preferred_date.replace(tzinfo=None) < datetime.now():
-            self.add_error('preferred_date', 'The date should be in the future.')
-        # Ensure end_date is after preferred_date
-        if end_date and end_date < preferred_date.date():
-            self.add_error('end_date', 'Please select an ending date that is after the preferred date.')
-        # Ensure preferred_date is within working hours (e.g., 8 AM to 8 PM)
-        start_time = time(8, 0)  # 8:00 AM
-        end_time = time(20, 0)   # 8:00 PM
-        lesson_end_time = (preferred_date + timedelta(minutes=duration)).time()
-        if not (start_time <= preferred_date.time() <= end_time and start_time <= lesson_end_time <= end_time):
-            self.add_error('preferred_date', 'The preferred date must be within working hours (8 AM to 8 PM).')
-
+        if date.replace(tzinfo=None) < datetime.now():
+            self.add_error('date', 'The date must be in the future.')
+        if recurrence_end_date is not None and recurrence_end_date < date.date():
+            self.add_error('recurrence_end_date', 'Please select an ending date that is after the preferred date.')
+        """Ensure that the duration is valid."""
+        if duration % 15 != 0:
+            self.add_error('duration', 'The duration must be in 15-minute intervals.')
+        if duration < 30 or duration > 240:
+            self.add_error('duration', 'The duration must be at least 30 minutes and no more than 240 minutes.')
+        """Ensure that the student is a student and the tutor is a tutor."""
+        if student.type != 'student':
+            self.add_error('student', 'The student must be a user of type student.')
+        if tutor is not None and tutor.type != 'tutor':
+            self.add_error('tutor', 'The tutor must be a user of type tutor.')
+        """Ensure the tutor teaches the subject."""
+        if tutor is not None and cleaned_data.get('subject') not in tutor.subjects.all():
+            self.add_error('tutor', f'This tutor does not teach {subject}, it only teaches {tutor.get_subjects()}.')
+            self.add_error('subject', f'The tutor {tutor} does not teach this subject.')
+        """Ensure that the lesson date do not overlap."""
+        for lesson_date in lesson_dates:
+            lesson_end_time = lesson_date + timedelta(minutes=duration)
+            overlapping_student_lessons = Lesson.objects.filter(student=student, date__lt=lesson_end_time, date__gte=date).exclude(pk=self.instance.pk)
+            if overlapping_student_lessons.exists():
+                overlapping_details = ', '.join([f"{ol.subject} on {ol.date.strftime('%d/%m/%Y %H:%M')}" for ol in overlapping_student_lessons])
+                self.add_error('date', f'The lesson time overlaps for the student {student} with an existing lesson: {overlapping_details}')
+                break
+            if tutor is not None:
+                overlapping_tutor_lessons = Lesson.objects.filter(tutor=tutor, date__lt=lesson_end_time, date__gte=date).exclude(pk=self.instance.pk)
+                if overlapping_tutor_lessons.exists():
+                    overlapping_details = ', '.join([f"{ol.subject} on {ol.date.strftime('%d/%m/%Y %H:%M')}" for ol in overlapping_tutor_lessons])
+                    self.add_error('date', f'The lesson time overlaps for the tutor {tutor} with an existing lesson: {overlapping_details}')
+                    self.add_error('tutor', f'The tutor {tutor} has an overlapping lesson on {lesson_date.strftime("%d/%m/%Y %H:%M")}, choose other tutor or change date.')
+                    break
+        
         return cleaned_data
 
-class LessonForm(forms.ModelForm):
-    student = forms.ModelChoiceField(queryset=User.objects.filter(type='student').order_by('username'), required=True)
-    tutor = forms.ModelChoiceField(queryset=User.objects.filter(type='tutor').order_by('username'), required=True)
-    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={'type':'datetime-local'}), required=True)
-    duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15, 'min': 30, 'max': 240}), required=True)
-    notes = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=False)
+class RequestForm(forms.ModelForm):
+    date = forms.DateTimeField(widget=forms.DateTimeInput(attrs={'type':'datetime-local'}))
+    duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15, 'min': 30, 'max': 240}))
 
     class Meta:
         model = Lesson
-        fields = ['student', 'tutor', 'subject', 'date', 'duration', 'notes']
+        fields = ['subject', 'date', 'duration', 'recurrence', 'recurrence_end_date']
+        widgets = {
+            'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'recurrence_end_date': forms.DateInput(attrs={'type': 'date'}),
+        }
 
     def clean(self):
         cleaned_data = super().clean()
         date = cleaned_data.get('date')
         duration = cleaned_data.get('duration')
+        recurrence = cleaned_data.get('recurrence')
+        recurrence_end_date = cleaned_data.get('recurrence_end_date')
+        lesson_dates = calculate_lesson_dates(date, recurrence_end_date, recurrence)
 
-        # Ensure duration is in 15-minute intervals
-        if duration % 15 != 0:
-            self.add_error('duration', 'The duration must be in 15-minute intervals.')
-        # Ensure duration is within a reasonable range
-        if duration < 30 or duration > 240:
-            self.add_error('duration', 'The duration must be at least 30 minutes and less than 240 minutes.')
-        # Ensure preferred_date is in the future
+        """Ensure that the lesson date and recurrence end date are valid."""
+        if recurrence != 'None' and not recurrence_end_date:
+            self.add_error('recurrence_end_date', 'Please enter an end date for the recurrence.')
+        if recurrence_end_date is not None and recurrence == 'None':
+            self.add_error('recurrence', 'To have an end date you must select a recurrence type.')
         if date.replace(tzinfo=None) < datetime.now():
             self.add_error('date', 'The date must be in the future.')
-        # Ensure date is within working hours (e.g., 8 AM to 8 PM)
+        if recurrence_end_date is not None and recurrence_end_date < date.date():
+            self.add_error('recurrence_end_date', 'Please select an ending date that is after the preferred date.')
+        """Ensure that the duration is valid."""
+        if duration % 15 != 0:
+            self.add_error('duration', 'The duration must be in 15-minute intervals.')
+        if duration < 30 or duration > 240:
+            self.add_error('duration', 'The duration must be at least 30 minutes and no more than 240 minutes.')
+        """Ensure preferred_date is within working hours (e.g., 8 AM to 8 PM)"""
         start_time = time(8, 0)  # 8:00 AM
         end_time = time(20, 0)   # 8:00 PM
         lesson_end_time = (date + timedelta(minutes=duration)).time()
         if not (start_time <= date.time() <= end_time and start_time <= lesson_end_time <= end_time):
-            self.add_error('date', 'The date must be within working hours (8 AM to 8 PM).')
+            self.add_error('preferred_date', 'The preferred date must be within working hours (8 AM to 8 PM).')
 
         return cleaned_data
 
+
 # User form
 class UserForm(forms.ModelForm):
+    """Form to update or create user profiles."""
+
+    class Meta:
+        """Form options."""
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email', 'type', 'subjects']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.type == 'tutor':
+            self.fields['subjects'].disabled = False
+        else:
+            self.fields['subjects'].required = False
+            self.fields['subjects'].disabled = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        email = cleaned_data.get('email')
+
+        """Ensure the username and email is unique."""
+        if User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+            self.add_error('username', 'This username is already taken.')
+        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+            self.add_error('email', 'This email is already taken.')
+        
+        return cleaned_data
+
+class ProfileForm(forms.ModelForm):
     """Form to update one's user profile."""
+
     class Meta:
         """Form options."""
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
 
-class UserFormAdmin(forms.ModelForm):
-    """Form to update or create user profiles."""
-    class Meta:
-        """Form options."""
-        model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'type']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.type == 'tutor':
+            self.fields['subjects'] = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), required=True)
 
-class UserFormTutor(forms.ModelForm):
-    """Form to update one's user profile being a tutor."""
-    subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.order_by('name'), required=False)
-    
-    class Meta:
-        """Form options."""
-        model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'subjects']
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        email = cleaned_data.get('email')
+
+        """Ensure the username and email is unique."""
+        if User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+            self.add_error('username', 'This username is already taken.')
+        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+            self.add_error('email', 'This email is already taken.')
+
+        return cleaned_data
+
 
 # Invoice form
 class InvoiceForm(forms.ModelForm):
     """Form to update user profiles."""
-    student = forms.ModelChoiceField(queryset=User.objects.filter(type='student').order_by('username'), required=True)
-    amount = forms.DecimalField(widget=forms.NumberInput(attrs={'min': 0, 'step': 0.50, 'placeholder': '£'}), max_digits=10, decimal_places=2, required=True)
-    due_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
-    paid = forms.ChoiceField(choices=[(True, 'Paid'), (False, 'Not Paid')], widget=forms.Select(attrs={'class': 'form-control'}), required=True, initial=False)
+    student = forms.ModelChoiceField(queryset=User.objects.filter(type='student').order_by('username'))
+    lesson = forms.ModelChoiceField(queryset=Lesson.objects.all().order_by('student'), required=False)
+    amount = forms.DecimalField(widget=forms.NumberInput(attrs={'min': 0, 'step': 0.50, 'placeholder': '£'}), max_digits=10, decimal_places=2)
+    due_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    paid = forms.ChoiceField(choices=[(True, 'Paid'), (False, 'Not Paid')], widget=forms.Select(attrs={'class': 'form-control'}), initial=False)
 
     class Meta:
         model = Invoice
-        fields = ['student', 'amount', 'due_date', 'paid']
+        fields = ['student', 'lesson', 'amount', 'due_date', 'paid']
 
     def clean(self):
         cleaned_data = super().clean()
         amount = cleaned_data.get('amount')
-        due_date = cleaned_data.get('due_date')
+        student = cleaned_data.get('student')
+        lesson = cleaned_data.get('lesson')
 
-        # Ensure the amount is a positive value
-        if amount is not None and amount <= 0:
-            self.add_error('amount', 'The amount must be greater than 0.')
-
-        # Ensure due_date is in the future
-        if due_date and due_date < datetime.now().date():
-            self.add_error('due_date', 'The due date must be in the future.')
+        """Ensure the amount is a positive value"""
+        if amount is not None and amount < 0:
+            self.add_error('amount', 'The amount must be greater or equal to 0.')
+        """Ensure that the student matches the lesson student."""
+        if student.type != 'student':
+            self.add_error('student', 'The student must be a user of type student.')
+        if lesson and student != lesson.student:
+            self.add_error('student', 'Student must match the lesson student.')
 
         return cleaned_data
+
 
 # Notification form
 class NotificationForm(forms.ModelForm):

@@ -2,11 +2,11 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1>Create Notification</h1>
+    <h1>{% if form.instance.pk %}Update{% else %}Create{% endif %} {{ model_name|title }}</h1>
     <form method="post">
         {% csrf_token %}
         {% include 'partials/bootstrap_form.html' with form=form %}
-        <button type="submit" class="btn btn-primary">Send Notification</button>
+        <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update{% else %}Create{% endif %} {{ model_name|title }}</button>
     </form>
 </div>
 {% endblock %}

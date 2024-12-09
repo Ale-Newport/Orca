@@ -2,12 +2,12 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1>Delete Request</h1>
-    <p>Are you sure you want to delete the request for {{ lesson.subject }} on {{ lesson.date }}?</p>
+    <h1>Delete {{ model_name|title }}</h1>
+    <p>Are you sure you want to delete this {{ model_name|title }}?</p>
     <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Delete</button>
-        <a href="{% url 'student_requests' %}" class="btn btn-secondary">Cancel</a>
+        <a href="{% url 'list_'|add:model_name|add:'s' %}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 {% endblock %}

@@ -1,4 +1,4 @@
-{% extends 'base_content.html' %}
+{% extends 'base/base_content.html' %}
 
 {% block content %}
 <div class="container mt-5">
@@ -13,7 +13,7 @@
                     <i class="fas fa-book-open fa-3x text-primary mb-3"></i>
                     <h5 class="card-title">Request a Lesson</h5>
                     <p class="card-text">Schedule a new lesson with one of our expert tutors.</p>
-                    <a href="{% url 'request_lesson' %}" class="btn btn-primary">Request a Lesson</a>
+                    <a href="{% url 'create_request' %}" class="btn btn-primary">Request a Lesson</a>
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
                                         <h5>{{ lesson.subject }}</h5>
-                                        <p>{{ lesson.date|date:"D, d M Y H:i" }} with {{ lesson.tutor }}</p>
+                                        <p>{{ lesson.next_lesson|date:"D, d M Y H:i" }} with {{ lesson.tutor }}</p>
                                     </div>
                                     <span class="badge badge-primary badge-pill">{{ lesson.duration }} mins</span>
                                 </li>
@@ -68,18 +68,20 @@
     <!-- Notifications Section -->
     <div class="notifications-section mb-5">
         <h2 class="text-center mb-4">Notifications</h2>
-        {% if unpaid_invoices %}
-        <div class="card shadow-sm border-warning">
-            <div class="card-body text-center">
-                <p>You have unpaid invoices. Please check <a href="{% url 'student_invoices' %}">your invoices</a>.</p>
+        {% if unread_notifications %}
+            <div class="list-group">
+                {% for notification in unread_notifications %}
+                    <a href="{% url 'notifications' %}" class="list-group {% if notification.read %}list-group-item-light{% else %}list-group-item-action list-group-item-info{% endif %}">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ notification.title }}</h5>
+                            <small>{{ notification.timestamp|date:"D, d M Y H:i" }}</small>
+                        </div>
+                        <p class="mb-1">{{ notification.message }}</p>
+                    </a>
+                {% endfor %}
             </div>
-        </div>
         {% else %}
-        <div class="card shadow-sm border-succes">
-            <div class="card-body text-center">
-                <p>All invoices are up to date. No pending payments!</p>
-            </div>
-        </div>
+            <p class="text-center">No new notifications.</p>
         {% endif %}
     </div>
 </div>

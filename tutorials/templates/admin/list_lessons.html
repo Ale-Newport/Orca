@@ -1,4 +1,4 @@
-{% extends 'base_content.html' %}
+{% extends 'base/base_content.html' %}
 
 {% block content %}
 <div class="container">
@@ -11,7 +11,7 @@
                 <select name="student" class="form-control">
                     <option value="">All Students</option>
                     {% for student in students_with_lessons %}
-                    <option value="{{ student.id }}" {% if request.GET.student == student.id|stringformat:"s" %}selected{% endif %}>{{ student.username }}</option>
+                    <option value="{{ student.id }}" {% if request.GET.student == student.id|stringformat:"s" %}selected{% endif %}>{{ student }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -19,7 +19,7 @@
                 <select name="subject" class="form-control">
                     <option value="">All Subjects</option>
                     {% for subject in subjects %}
-                    <option value="{{ subject }}" {% if request.GET.subject == subject %}selected{% endif %}>{{ subject }}</option>
+                    <option value="{{ subject.id }}" {% if request.GET.subject == subject.id|stringformat:"s" %}selected{% endif %}>{{ subject }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -27,12 +27,9 @@
                 <select name="tutor" class="form-control">
                     <option value="">All Tutors</option>
                     {% for tutor in tutors_with_lessons %}
-                    <option value="{{ tutor }}" {% if request.GET.tutor == tutor %}selected{% endif %}>{{ tutor }}</option>
+                    <option value="{{ tutor.id }}" {% if request.GET.tutor == tutor.id|stringformat:"s" %}selected{% endif %}>{{ tutor }}</option>
                     {% endfor %}
                 </select>
-            </div>
-            <div class="col-md-2">
-                <input type="date" name="date" class="form-control" placeholder="Date" value="{{ request.GET.date }}">
             </div>
             <div class="col-md-2">
                 <select name="duration" class="form-control">
@@ -50,6 +47,14 @@
                     <option value="Rejected" {% if request.GET.status == 'Rejected' %}selected{% endif %}>Rejected</option>
                 </select>
             </div>
+            <div class="col-md-2">
+                <select name="recurrence" class="form-control">
+                    <option value="">All Recurrence</option>
+                    {% for recurrence in recurrences %}
+                    <option value="{{ recurrence }}" {% if request.GET.recurence == recurrence|stringformat:"s" %}selected{% endif %}>{{ recurrence }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
         <div class="row mt-3">
             <div class="col-md-10">
@@ -65,11 +70,11 @@
         <thead>
             <tr>
                 <th>
-                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'student__username' %}order_by=-student__username{% else %}order_by=student__username{% endif %}">
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'student' %}order_by=-student{% else %}order_by=student{% endif %}">
                         Student
-                        {% if request.GET.order_by == 'student__username' %}
+                        {% if request.GET.order_by == 'student' %}
                             <i class="fa fa-angle-down"></i>
-                        {% elif request.GET.order_by == '-student__username' %}
+                        {% elif request.GET.order_by == '-student' %}
                             <i class="fa fa-angle-up"></i>
                         {% endif %}
                     </a>
@@ -115,6 +120,26 @@
                     </a>
                 </th>
                 <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'recurrence' %}order_by=-recurrence{% else %}order_by=recurrence{% endif %}">
+                        Recurrence
+                        {% if request.GET.order_by == 'recurrence' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-recurrence' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a class="text-decoration-none" href="?{% if request.GET.order_by == 'end_date' %}order_by=-end_date{% else %}order_by=end_date{% endif %}">
+                        End Date
+                        {% if request.GET.order_by == 'end_date' %}
+                            <i class="fa fa-angle-down"></i>
+                        {% elif request.GET.order_by == '-end_date' %}
+                            <i class="fa fa-angle-up"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
                     <a class="text-decoration-none" href="?{% if request.GET.order_by == 'status' %}order_by=-status{% else %}order_by=status{% endif %}">
                         Status
                         {% if request.GET.order_by == 'status' %}
@@ -130,15 +155,17 @@
         <tbody>
             {% for lesson in lessons %}
             <tr>
-                <td>{{ lesson.student.username }}</td>
+                <td>{{ lesson.student }}</td>
                 <td>{{ lesson.subject }}</td>
-                <td>{{ lesson.date }}</td>
+                <td>{{ lesson.date|date:"d/m/Y H:i" }}</td>
                 <td>{{ lesson.duration }} mins</td>
                 <td>{{ lesson.tutor }}</td>
+                <td>{{ lesson.recurrence }}</td>
+                <td>{{ lesson.recurrence_end_date|date:"d/m/Y" }}</td>
                 <td>
-                    {% if lesson.status == 'approved' %}
-                    <span class="badge bg-success">Approced</span>
-                    {% elif lesson.status == 'pending' %}
+                    {% if lesson.status == 'Approved' %}
+                    <span class="badge bg-success">Approved</span>
+                    {% elif lesson.status == 'Pending' %}
                     <span class="badge bg-warning">Pending</span>
                     {% else %}
                     <span class="badge bg-danger">Rejected</span>
@@ -146,8 +173,12 @@
                 </td>
                 <td>
                     <a href="{% url 'update_lesson' lesson.id %}"><i class="bi bi-pen-fill"></i></a>
-                    &nbsp;&nbsp; 
-                    <a href="{% url 'delete_lesson' lesson.id %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
+                    &nbsp;&nbsp;
+                    <a href="{% url 'create_notification' %}?model=Lesson&pk={{ lesson.pk }}"><i class="fa-solid fa-envelope"></i></a>
+                    &nbsp;&nbsp;
+                    <a href="{% url 'create_invoice' %}?model=Lesson&pk={{ lesson.pk }}"><i class="fa-solid fa-sterling-sign"></i></a>
+                    &nbsp;&nbsp;
+                    <a href="{% url 'delete_object' 'Lesson' lesson.pk %}" class="text-danger"><i class="bi bi-trash3-fill"></i></a>
                 </td>
             </tr>
             {% endfor %}
