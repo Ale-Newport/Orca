@@ -1,45 +1,33 @@
 from django.test import TestCase
-from tutorials.models import User, Lesson
+from tutorials.models import User, Lesson, Subject
 from django.utils import timezone
 from datetime import timedelta
 
 class ScheduleConflictTest(TestCase):
+    """Tests for detecting schedule conflicts between lessons."""
+
+    fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json']
+
     def setUp(self):
-        self.tutor = User.objects.create_user(
-            username='@tutor',
-            email='tutor@example.com',
-            first_name='Tutor',
-            last_name='User',
-            type='tutor',
-            password='Password123'
-        )
-        self.student = User.objects.create_user(
-            username='@student',
-            email='student@example.com',
-            first_name='Student',
-            last_name='User',
-            type='student',
-            password='Password123'
-        )
+        self.tutor = User.objects.get(pk=3)
+        self.student = User.objects.get(pk=1)
         self.tomorrow_noon = timezone.now().replace(hour=12, minute=0) + timedelta(days=1)
 
     def test_detect_overlapping_lessons(self):
         # Create first lesson
         lesson1 = Lesson.objects.create(
             student=self.student,
-            subject='Python',
+            subject=Subject.objects.get(name='Python'),
             date=self.tomorrow_noon,
             duration=60,
-            tutor=str(self.tutor.id)
         )
         
         # Try to create overlapping lesson
         lesson2 = Lesson.objects.create(
             student=self.student,
-            subject='Java',
+            subject=Subject.objects.get(name='Java'),
             date=self.tomorrow_noon + timedelta(minutes=30),
             duration=60,
-            tutor=str(self.tutor.id)
         )
         
         # Check if lessons overlap
@@ -52,31 +40,28 @@ class ScheduleConflictTest(TestCase):
         # Create first lesson
         lesson1 = Lesson.objects.create(
             student=self.student,
-            subject='Python',
+            subject=Subject.objects.get(name='Python'),
             date=self.tomorrow_noon,
             duration=60,
-            tutor=str(self.tutor.id)
         )
         
         # Create lesson immediately after
         lesson2 = Lesson.objects.create(
             student=self.student,
-            subject='Java',
+            subject=Subject.objects.get(name='Java'),
             date=self.tomorrow_noon + timedelta(minutes=60),
             duration=60,
-            tutor=str(self.tutor.id)
         )
         
         lesson1_end = lesson1.date + timedelta(minutes=lesson1.duration)
         self.assertEqual(lesson1_end, lesson2.date)
 
     def test_lessons_in_working_hours(self):
-        early_morning = self.tomorrow_noon.replace(hour=7)  # Before 8 AM
+        early_morning = self.tomorrow_noon.replace(hour=7)
         lesson = Lesson.objects.create(
             student=self.student,
-            subject='Python',
+            subject=Subject.objects.get(name='Python'),
             date=early_morning,
             duration=60,
-            tutor=str(self.tutor.id)
         )
-        self.assertLess(lesson.date.hour, 8)  # Should fail working hours validation
+        self.assertLess(lesson.date.hour, 8)

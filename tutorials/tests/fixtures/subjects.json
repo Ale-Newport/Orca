@@ -1,0 +1,37 @@
+[
+    {
+      "model": "tutorials.subject",
+      "pk": 1,
+      "fields": {
+        "name": "Python"
+      }
+    },
+    {
+      "model": "tutorials.subject",
+      "pk": 2,
+      "fields": {
+        "name": "Java"
+      }
+    },
+    {
+      "model": "tutorials.subject",
+      "pk": 3,
+      "fields": {
+        "name": "C++"
+      }
+    },
+    {
+      "model": "tutorials.subject",
+      "pk": 4,
+      "fields": {
+        "name": "Scala"
+      }
+    },
+    {
+      "model": "tutorials.subject",
+      "pk": 5,
+      "fields": {
+        "name": "Web Development"
+      }
+    }
+  ]

@@ -5,24 +5,15 @@ from django.utils import timezone
 from datetime import timedelta
 
 class AdminViewsTest(TestCase):
+
+    fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json']
+    
     def setUp(self):
-        self.admin = User.objects.create_user(
-            username='@adminuser',
-            email='admin@example.com',
-            first_name='Admin',
-            last_name='User',
-            type='admin',
-            password='Password123'
-        )
-        self.student = User.objects.create_user(
-            username='@studentuser',
-            email='student@example.com',
-            first_name='Student',
-            last_name='User',
-            type='student',
-            password='Password123'
-        )
-        self.client.login(username='@adminuser', password='Password123')
+        self.admin = User.objects.get(pk=3)
+        adminusername = self.admin.username
+        self.client.login(username=adminusername, password='Password123')
+        self.student = User.objects.get(pk=1)
+        self.studentusername = self.student.username
 
     def test_admin_dashboard_access(self):
         url = reverse('admin_dashboard')
@@ -50,7 +41,7 @@ class AdminViewsTest(TestCase):
         self.assertTemplateUsed(response, 'admin/list_invoices.html')
 
     def test_non_admin_cannot_access_admin_dashboard(self):
-        self.client.login(username='@studentuser', password='Password123')
+        self.client.login(username=self.studentusername, password='Password123')
         url = reverse('admin_dashboard')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)

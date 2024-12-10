@@ -3,8 +3,8 @@ from django.test import TestCase
 from tutorials.models import User
 from tutorials.forms import PasswordForm
 
-# Included edge test cases 
 class PasswordFormTestCase(TestCase):
+    """Unit tests of the password form."""
 
     fixtures = ['tutorials/tests/fixtures/default_user.json']
 
@@ -73,7 +73,6 @@ class PasswordFormTestCase(TestCase):
         self.user.refresh_from_db()
         self.assertFalse(check_password('Password123', self.user.password))
         self.assertTrue(check_password('NewPassword123', self.user.password))
-
 
     def test_password_with_special_characters(self):
         self.form_input['new_password'] = 'NewPassword@123'

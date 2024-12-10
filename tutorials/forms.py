@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
-from django.core.exceptions import ValidationError
 from tutorials.models import User, Subject, Lesson, Invoice, Notification
 from datetime import datetime, time, timedelta
 from tutorials.helpers import calculate_lesson_dates
@@ -108,9 +107,10 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
 
 # Lessons forms
 class LessonForm(forms.ModelForm):
-    student = forms.ModelChoiceField(queryset=User.objects.filter(type='student').order_by('username'))
+    student = forms.ModelChoiceField(queryset=User.objects.filter(type='student').order_by('username'), required=True)
     tutor = forms.ModelChoiceField(queryset=User.objects.filter(type='tutor').order_by('username'), required=False)
-    duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15, 'min': 30, 'max': 240}))
+    subject = forms.ModelChoiceField(queryset=Subject.objects.all().order_by('name'), required=True)
+    duration = forms.IntegerField(widget=forms.NumberInput(attrs={'type': 'number', 'step': 15, 'min': 30, 'max': 240}), required=True)
 
     class Meta:
         model = Lesson
@@ -140,18 +140,8 @@ class LessonForm(forms.ModelForm):
             self.add_error('date', 'The date must be in the future.')
         if recurrence_end_date is not None and recurrence_end_date < date.date():
             self.add_error('recurrence_end_date', 'Please select an ending date that is after the preferred date.')
-        """Ensure that the duration is valid."""
-        if duration % 15 != 0:
-            self.add_error('duration', 'The duration must be in 15-minute intervals.')
-        if duration < 30 or duration > 240:
-            self.add_error('duration', 'The duration must be at least 30 minutes and no more than 240 minutes.')
-        """Ensure that the student is a student and the tutor is a tutor."""
-        if student.type != 'student':
-            self.add_error('student', 'The student must be a user of type student.')
-        if tutor is not None and tutor.type != 'tutor':
-            self.add_error('tutor', 'The tutor must be a user of type tutor.')
         """Ensure the tutor teaches the subject."""
-        if tutor is not None and cleaned_data.get('subject') not in tutor.subjects.all():
+        if tutor is not None and subject not in tutor.subjects.all():
             self.add_error('tutor', f'This tutor does not teach {subject}, it only teaches {tutor.get_subjects()}.')
             self.add_error('subject', f'The tutor {tutor} does not teach this subject.')
         """Ensure that the lesson date do not overlap."""

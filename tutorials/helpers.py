@@ -6,22 +6,25 @@ import pytz
 
 def calculate_lesson_dates(start_date, end_date, recurrence):
         """Calculate all lesson dates based on recurrence and recurrence_end_date."""
-        dates = []
-        current_date = start_date
-        if recurrence == 'None':
-            dates.append(current_date)
-        elif recurrence == 'Daily' or recurrence == 'Weekly' or recurrence == 'Monthly':
-            while current_date.date() <= end_date:
+        try:
+            dates = []
+            current_date = start_date
+            if recurrence == 'None':
                 dates.append(current_date)
-                if recurrence == 'Daily':
-                    current_date += timedelta(days=1)
-                elif recurrence == 'Weekly':
-                    current_date += timedelta(weeks=1)
-                elif recurrence == 'Monthly':
-                    current_date += timedelta(days=30)
-        else:
-            raise ValueError('Invalid recurrence value.')
-        return dates
+            elif recurrence == 'Daily' or recurrence == 'Weekly' or recurrence == 'Monthly':
+                while current_date.date() <= end_date:
+                    dates.append(current_date)
+                    if recurrence == 'Daily':
+                        current_date += timedelta(days=1)
+                    elif recurrence == 'Weekly':
+                        current_date += timedelta(weeks=1)
+                    elif recurrence == 'Monthly':
+                        current_date += timedelta(days=30)
+            else:
+                raise ValueError('Invalid recurrence value.')
+            return dates
+        except:
+            return []
 
 def days_between(start_date, end_date):
     return (end_date - start_date).days

@@ -1,0 +1,44 @@
+[
+    {
+      "model": "tutorials.lesson",
+      "pk": 1,
+      "fields": {
+        "student": 1,
+        "subject": 1,
+        "tutor": 2,
+        "date": "2025-10-05T14:30:00Z",
+        "duration": 60,
+        "status": "Pending",
+        "recurrence": "None",
+        "recurrence_end_date": null
+      }
+    },
+    {
+        "model": "tutorials.lesson",
+        "pk": 2,
+        "fields": {
+            "student": 4,
+            "subject": 1,
+            "tutor": 2,
+            "date": "2025-10-12T14:30:00Z",
+            "duration": 60,
+            "status": "Approved",
+            "recurrence": "None",
+            "recurrence_end_date": null
+        }
+        },
+        {
+        "model": "tutorials.lesson",
+        "pk": 3,
+        "fields": {
+            "student": 1,
+            "subject": 1,
+            "tutor": 2,
+            "date": "2025-10-19T14:30:00Z",
+            "duration": 60,
+            "status": "Rejected",
+            "recurrence": "None",
+            "recurrence_end_date": null
+        }
+    }
+  ]

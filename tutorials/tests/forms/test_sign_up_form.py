@@ -1,4 +1,3 @@
-"""Unit tests of the sign up form."""
 from django.contrib.auth.hashers import check_password
 from django import forms
 from django.test import TestCase
@@ -15,7 +14,8 @@ class SignUpFormTestCase(TestCase):
             'username': '@janedoe',
             'email': 'janedoe@example.org',
             'new_password': 'Password123',
-            'password_confirmation': 'Password123'
+            'password_confirmation': 'Password123',
+            'type': 'student'
         }
 
     def test_valid_sign_up_form(self):
@@ -79,15 +79,13 @@ class SignUpFormTestCase(TestCase):
         form = SignUpForm(data={
             'first_name': 'Jane',
             'last_name': 'Doe',
-            'username': '@janedoe',
-            'email': 'janedoe@example.org',
+            'username': '@janedoe3',
+            'email': 'janedoe3@example.org',
             'new_password': 'Password123',
             'password_confirmation': 'Password123',
-            'type': 'student'  # Required field
+            'type': 'student'
         })
-        self.assertTrue(form.is_valid())  # Add this to debug validation errors
-        if not form.is_valid():
-            print(form.errors)  # Add this to see what's failing
+        self.assertTrue(form.is_valid())
         before_count = User.objects.count()
         form.save()
         after_count = User.objects.count()

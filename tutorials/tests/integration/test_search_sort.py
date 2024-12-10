@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from tutorials.models import User, Lesson
+from tutorials.models import User, Lesson, Subject
 from django.utils import timezone
 from datetime import timedelta
 
@@ -8,6 +8,10 @@ class SearchSortTest(TestCase):
     """Tests for search and sort functionality."""
     
     def setUp(self):
+        # Create test subjects
+        self.python = Subject.objects.create(name='Python')
+        self.java = Subject.objects.create(name='Java')
+
         # Create test users
         self.admin = User.objects.create_user(
             username='@adminuser',
@@ -39,18 +43,22 @@ class SearchSortTest(TestCase):
         # Create test lessons
         self.lesson1 = Lesson.objects.create(
             student=self.student1,
-            subject='Python',
+            subject=self.python,
             date=timezone.now() + timedelta(days=1),
             duration=60,
-            status='Pending'
+            status='Pending',
+            recurrence='None',
+            recurrence_end_date=None
         )
         
         self.lesson2 = Lesson.objects.create(
             student=self.student2,
-            subject='Java',
+            subject=self.java,
             date=timezone.now() + timedelta(days=2),
             duration=90,
-            status='Approved'
+            status='Approved',
+            recurrence='None',
+            recurrence_end_date=None
         )
         
         self.client.login(username='@adminuser', password='Password123')
@@ -60,10 +68,10 @@ class SearchSortTest(TestCase):
         url = reverse('list_lessons')
         
         # Test search by subject
-        response = self.client.get(url, {'search': 'Python'})
+        response = self.client.get(url, {'search': self.python.name})
         lessons = list(response.context['lessons'])  # Convert to list to force query evaluation
         self.assertEqual(len(lessons), 1)
-        self.assertEqual(lessons[0].subject, 'Python')
+        self.assertEqual(lessons[0].subject, self.python)
         
         # Test search by student username
         response = self.client.get(url, {'search': '@student1'})
@@ -79,7 +87,7 @@ class SearchSortTest(TestCase):
         response = self.client.get(url, {'status': 'Pending'})
         lessons = list(response.context['lessons'])
         self.assertEqual(len(lessons), 1)
-        self.assertEqual(lessons[0].subject, 'Python')
+        self.assertEqual(lessons[0].subject, self.python)
 
     def test_lesson_sorting(self):
         """Test sorting lessons."""
@@ -98,9 +106,9 @@ class SearchSortTest(TestCase):
         self.assertEqual(lessons[1], self.lesson1)
         
         # Test sort by subject
-        response = self.client.get(url, {'order_by': 'subject'})
+        response = self.client.get(url, {'order_by': 'subject__name'})
         lessons = response.context['lessons']
-        self.assertEqual(lessons[0], self.lesson2)  # Java comes before Python
+        self.assertEqual(lessons[0], self.lesson2)
         self.assertEqual(lessons[1], self.lesson1)
 
     def test_multiple_filters(self):
@@ -114,4 +122,4 @@ class SearchSortTest(TestCase):
         })
         lessons = list(response.context['lessons'])
         self.assertEqual(len(lessons), 1)
-        self.assertEqual(lessons[0].subject, 'Python')
+        self.assertEqual(lessons[0].subject, self.python)

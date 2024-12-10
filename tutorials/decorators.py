@@ -13,7 +13,7 @@ def user_type_required(allowed_types):
 
             # Return 403  if user type is not allowed
             if request.user.type not in allowed_types:
-                return render(request, '403.html', {
+                return render(request, 'base/403.html', {
                     'message': "You don't have permission to access this page.", 
                     'redirect_url': 'student_dashboard' if request.user.type == 'student' else 'tutor_dashboard'
                 }, status=403)

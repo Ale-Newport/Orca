@@ -89,14 +89,14 @@ class Lesson(models.Model):
         ('Monthly', 'Monthly'),
     ]
 
-    student = models.ForeignKey(User, limit_choices_to={'type': 'student'}, on_delete=models.CASCADE, related_name="lessons")
+    student = models.ForeignKey(User, limit_choices_to={'type': 'student'}, on_delete=models.CASCADE, related_name="lessons", blank=False)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, blank=False)
     tutor = models.ForeignKey(User, limit_choices_to={'type': 'tutor'}, on_delete=models.SET_DEFAULT, default=None, null=True)
     date = models.DateTimeField()
     duration = models.PositiveIntegerField(validators=[MinValueValidator(30), MaxValueValidator(240), RegexValidator(regex=r'^[1-9][0-9]*[05]$|^[1-9][0-9]*0$', message='Duration must be in 15 minute increments.')])
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     recurrence = models.CharField(max_length=10, choices=RECURRENCE_CHOICES, default='None')
-    recurrence_end_date = models.DateField(blank=True, null=True)
+    recurrence_end_date = models.DateField(blank=True, null=True, default=None)
 
     def is_assigned(self):
         """Return True if a tutor has been assigned."""
@@ -143,16 +143,6 @@ class Lesson(models.Model):
             raise ValidationError('Recurrence must be set to have a recurrence end date.')
         if self.recurrence_end_date and self.date and self.recurrence_end_date < self.date.date():
             raise ValidationError('Recurrence end date must be after the lesson date.')
-        """Ensure that the duration is valid."""
-        if self.duration % 15 != 0:
-            raise ValidationError('Duration must be in 15 minute increments.')
-        if self.duration < 30 or self.duration > 240:
-            raise ValidationError('Duration must be between 30 and 240 minutes.')
-        """Ensure that the student is a student and the tutor is a tutor."""
-        if self.student.type != 'student':
-            raise ValidationError('The student must be a user of type student.')
-        if self.is_assigned() and self.tutor.type != 'tutor':
-            raise ValidationError('The tutor must be a user of type tutor.')
 
     def __str__(self):
         return f"{self.subject} with {self.student} on {self.date.strftime('%d/%m/%Y %H:%M')}"
@@ -160,8 +150,8 @@ class Lesson(models.Model):
 
 class Invoice(models.Model):
     student = models.ForeignKey(User, limit_choices_to={'type': 'student'}, on_delete=models.CASCADE, related_name='invoices')
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, related_name='invoices')
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, related_name='invoices', default=None)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=0)
     due_date = models.DateField()
     paid = models.BooleanField(default=False)
 
@@ -170,12 +160,7 @@ class Invoice(models.Model):
         return not self.paid and self.due_date < timezone.now().date()
 
     def clean(self):
-        """Ensure that the amount is greater than or equal to zero."""
-        if self.amount < 0:
-            raise ValidationError('Amount must be greater or equal to 0.')
         """Ensure that the student matches the lesson student."""
-        if self.student.type != 'student':
-            raise ValidationError('The student must be a user of type student.')
         if self.lesson and self.student != self.lesson.student:
             raise ValidationError('Student must match the lesson student.')
 

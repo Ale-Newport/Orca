@@ -169,7 +169,9 @@ class LogInView(LoginProhibitedMixin, View):
             return reverse('admin_dashboard')
         elif user.type == 'tutor':
             return reverse('tutor_dashboard')
-        return reverse('student_dashboard')
+        elif user.type == 'student':
+            return reverse('student_dashboard')
+        return reverse('home')
     
     def render(self):
         """Render login template."""

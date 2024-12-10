@@ -3,23 +3,20 @@ from django.urls import reverse
 from tutorials.models import User
 
 class TemplateRenderingTest(TestCase):
+    """Tests of the rendering of the templates."""
+
+    fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json']
+
     def setUp(self):
-        self.user = User.objects.create_user(
-            username='@testuser',
-            email='test@example.com',
-            first_name='Test',
-            last_name='User',
-            type='student',
-            password='Password123'
-        )
+        self.user = User.objects.get(pk=1)
 
     def test_login_page_uses_correct_template(self):
         response = self.client.get(reverse('log_in'))
-        self.assertTemplateUsed(response, 'log_in.html')
+        self.assertTemplateUsed(response, 'profile/log_in.html')
 
     def test_signup_page_uses_correct_template(self):
         response = self.client.get(reverse('sign_up'))
-        self.assertTemplateUsed(response, 'sign_up.html')
+        self.assertTemplateUsed(response, 'profile/sign_up.html')
 
     def test_login_page_contains_form(self):
         response = self.client.get(reverse('log_in'))

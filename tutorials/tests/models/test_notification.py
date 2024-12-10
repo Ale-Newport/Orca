@@ -5,14 +5,10 @@ from django.utils import timezone
 class NotificationBasicsTest(TestCase):
     """Tests for the Notification model."""
 
+    fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json']
+
     def setUp(self):
-        self.user = User.objects.create(
-            username='@testuser',
-            email='test@example.com',
-            first_name='Test',
-            last_name='User',
-            type='student'
-        )
+        self.user = User.objects.get(pk=1)
 
     def test_notification_has_created_date(self):
         notification = Notification.objects.create(
@@ -66,7 +62,7 @@ class NotificationBasicsTest(TestCase):
 
 
     def test_notification_with_long_message(self):
-        long_message = "A" * 1024  # Assuming 1024 characters is within valid limits
+        long_message = "A" * 1024
         notification = Notification.objects.create(
             user=self.user,
             message=long_message

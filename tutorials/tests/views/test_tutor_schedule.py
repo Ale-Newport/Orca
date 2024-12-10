@@ -1,20 +1,17 @@
 from django.test import TestCase
 from django.urls import reverse
-from tutorials.models import User, Lesson
+from tutorials.models import User, Lesson, Subject
 from django.utils import timezone
 from datetime import timedelta
 
 class TutorScheduleTest(TestCase):
+    """Tests the tutor schedule view."""
+
+    fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json']
+
     def setUp(self):
-        self.tutor = User.objects.create_user(
-            username='@tutoruser',
-            email='tutor@example.com',
-            first_name='Tutor',
-            last_name='User',
-            type='tutor',
-            password='Password123'
-        )
-        self.client.login(username='@tutoruser', password='Password123')
+        self.tutor = User.objects.get(pk=2)
+        self.client.login(username=self.tutor.username, password='Password123')
 
     def test_schedule_shows_current_month(self):
         url = reverse('tutor_schedule')
@@ -46,19 +43,12 @@ class TutorScheduleTest(TestCase):
 
     def test_schedule_shows_working_hours(self):
         future_date = timezone.now() + timedelta(days=1)
-        lesson = Lesson.objects.create(
-            student=User.objects.create_user(
-                username='@student',
-                email='student@example.com',
-                first_name='Student',
-                last_name='User',
-                type='student',
-                password='Password123'
-            ),
-            subject='Python',
-            date=future_date.replace(hour=14),  # 2 PM
+        Lesson.objects.create(
+            tutor=self.tutor,
+            student=User.objects.get(pk=1),
+            subject=Subject.objects.get(pk=1),
+            date=future_date.replace(hour=14),
             duration=60,
-            tutor=self.tutor.username
         )
         url = reverse('tutor_schedule')
         response = self.client.get(url)

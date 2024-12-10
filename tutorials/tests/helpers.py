@@ -1,11 +1,26 @@
 from django.urls import reverse
 from with_asserts.mixin import AssertHTMLMixin
+from tutorials.models import User, Lesson, Subject, Invoice, Notification
 
 def reverse_with_next(url_name, next_url):
     """Extended version of reverse to generate URLs with redirects"""
     url = reverse(url_name)
     url += f"?next={next_url}"
     return url
+
+
+def create_user(name = 'charlie', type = 'student'):
+    """Create a student user."""
+    User.objects.create_user(
+        username=f'@{name}',
+        email=f'{name}.johnson@example.org',
+        password='Password123',
+        first_name=name,
+        last_name='Johnson',
+        type=type,
+    )
+    return User.objects.get(username='@{name}')
+
 
 
 class LogInTester:

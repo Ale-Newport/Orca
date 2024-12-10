@@ -5,16 +5,15 @@ from django.utils import timezone
 from datetime import timedelta
 
 class AdminManagementTest(TestCase):
+    """Tests the Invoice model."""
+    
+    fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json']
+
+    
     def setUp(self):
-        self.admin = User.objects.create_user(
-            username='@adminuser',
-            email='admin@example.com',
-            first_name='Admin',
-            last_name='User',
-            type='admin',
-            password='Password123'
-        )
-        self.client.login(username='@adminuser', password='Password123')
+        self.admin = User.objects.get(pk=3)
+        username = self.admin.username
+        self.client.login(username=username, password='Password123')
 
     def test_admin_can_create_user(self):
         url = reverse('create_user')

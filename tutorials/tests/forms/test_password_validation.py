@@ -1,8 +1,10 @@
 from django.test import TestCase
 from tutorials.forms import PasswordForm
 from tutorials.models import User
-# Used dynamic testing instead of hardcode testing
+
 class PasswordFormValidationTest(TestCase):
+    """Unit tests validator of the password form."""
+
     def setUp(self):
         self.user = User.objects.create_user(
             username='@testuser',

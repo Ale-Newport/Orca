@@ -1,0 +1,81 @@
+[
+  {
+    "model": "tutorials.user",
+    "pk": 1,
+    "fields": {
+      "first_name": "Charlie",
+      "last_name": "Johnson",
+      "username": "@charlie",
+      "email": "charliejohnson@example.org",
+      "type": "student",
+      "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
+      "is_active": true
+    }
+  },
+  {
+    "model": "tutorials.user",
+    "pk": 2,
+    "fields": {
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "username": "@janedoe",
+      "email": "janedoe@example.org",
+      "type": "tutor",
+      "subjects": [1, 2, 3, 4, 5],
+      "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
+      "is_active": true
+    }
+  },
+  {
+    "model": "tutorials.user",
+    "pk": 3,
+    "fields": {
+      "first_name": "John",
+      "last_name": "Doe",
+      "username": "@johndoe",
+      "type": "admin",
+      "email": "johndoe@example.org",
+      "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
+      "is_active": true
+    }
+  },
+  {
+    "model": "tutorials.user",
+    "pk": 4,
+    "fields": {
+      "first_name": "student",
+      "last_name": "User",
+      "username": "@student",
+      "email": "student@example.org",
+      "type": "student",
+      "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
+      "is_active": true
+    }
+  },
+  {
+    "model": "tutorials.user",
+    "pk": 5,
+    "fields": {
+      "first_name": "tutor",
+      "last_name": "User",
+      "username": "@tutor",
+      "email": "tutor@example.org",
+      "type": "tutor",
+      "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
+      "is_active": true
+    }
+  },
+  {
+    "model": "tutorials.user",
+    "pk": 6,
+    "fields": {
+      "first_name": "admin",
+      "last_name": "User",
+      "username": "@admin",
+      "email": "admin@example.org",
+      "type": "admin",
+      "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
+      "is_active": true
+    }
+  }
+]

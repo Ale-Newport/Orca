@@ -14,7 +14,7 @@ class LessonBookingTest(SeleniumTestCase):
 
     def test_lesson_request_form_submission(self):
         """Test the lesson request form submission process."""
-        self.browser.get(f'{self.live_server_url}{reverse("request_lesson")}')
+        self.browser.get(f'{self.live_server_url}{reverse("create_request")}')
         
         # Fill out the form
         subject_select = Select(self.browser.find_element(By.NAME, 'subject'))
