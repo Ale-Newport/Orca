@@ -119,7 +119,6 @@ class InvoiceCreationTest(TestCase):
         self.assertIn('Unpaid', str(invoice))
 
 class InvoiceAmountTest(TestCase):
-    """Tests the Invoice model amount field."""
 
     fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json', 'tutorials/tests/fixtures/lessons.json']
 

@@ -3,8 +3,6 @@ from django.urls import reverse
 from tutorials.models import User
 
 class ViewPermissionsTest(TestCase):
-    """Tests that users can only access the views they are allowed to."""
-
     fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json']
 
     def setUp(self):

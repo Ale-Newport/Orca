@@ -6,8 +6,6 @@ from tutorials.models import User
 from tutorials.tests.helpers import reverse_with_next
 
 class PasswordViewTest(TestCase):
-    """Test suite for the password view."""
-
     fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json']
 
     def setUp(self):

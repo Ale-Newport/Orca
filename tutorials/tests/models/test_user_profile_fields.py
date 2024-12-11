@@ -6,7 +6,7 @@ class UserProfileFieldsTest(TestCase):
     """Tests for user profile field validation."""
 
     def setUp(self):
-        self.user = User.objects.create_user(  # Using create_user instead of create
+        self.user = User.objects.create_user( 
             username='@testuser',
             email='test@example.com',
             first_name='Test',
@@ -18,7 +18,7 @@ class UserProfileFieldsTest(TestCase):
     def test_first_name_max_length_valid(self):
         self.user.first_name = 'A' * 50
         try:
-            self.user.clean_fields(exclude=['password'])  # Exclude password validation
+            self.user.clean_fields(exclude=['password'])  
             self.assertTrue(True)
         except ValidationError:
             self.fail("First name of max length should be valid")

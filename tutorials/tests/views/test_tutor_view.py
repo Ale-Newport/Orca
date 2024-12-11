@@ -5,8 +5,6 @@ from django.utils import timezone
 from datetime import timedelta
 
 class TutorViewsTest(TestCase):
-    """Tests the tutor views."""
-
     fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json']
 
     def setUp(self):

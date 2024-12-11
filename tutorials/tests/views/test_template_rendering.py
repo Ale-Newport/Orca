@@ -3,8 +3,6 @@ from django.urls import reverse
 from tutorials.models import User
 
 class TemplateRenderingTest(TestCase):
-    """Tests of the rendering of the templates."""
-
     fixtures = ['tutorials/tests/fixtures/subjects.json', 'tutorials/tests/fixtures/users.json']
 
     def setUp(self):

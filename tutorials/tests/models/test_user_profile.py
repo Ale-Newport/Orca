@@ -21,7 +21,7 @@ class UserProfileTest(TestCase):
         for size in test_sizes:
             gravatar_url = self.user.gravatar(size=size)
             self.assertIn(f'size={size}', gravatar_url)
-            self.assertIn('mp', gravatar_url)  # Default image parameter
+            self.assertIn('mp', gravatar_url) 
 
     def test_mini_gravatar(self):
         """Test the mini gravatar shortcut method."""

@@ -14,7 +14,7 @@ class ScheduleConflictTest(TestCase):
         self.tomorrow_noon = timezone.now().replace(hour=12, minute=0) + timedelta(days=1)
 
     def test_detect_overlapping_lessons(self):
-        # Create first lesson
+        #ccreate first lesson
         lesson1 = Lesson.objects.create(
             student=self.student,
             subject=Subject.objects.get(name='Python'),
@@ -22,7 +22,7 @@ class ScheduleConflictTest(TestCase):
             duration=60,
         )
         
-        # Try to create overlapping lesson
+        #try to create overlapping lesson
         lesson2 = Lesson.objects.create(
             student=self.student,
             subject=Subject.objects.get(name='Java'),
@@ -30,14 +30,14 @@ class ScheduleConflictTest(TestCase):
             duration=60,
         )
         
-        # Check if lessons overlap
+        #check if lessons overlap
         lesson1_end = lesson1.date + timedelta(minutes=lesson1.duration)
         lesson2_end = lesson2.date + timedelta(minutes=lesson2.duration)
         overlaps = (lesson1.date < lesson2_end) and (lesson2.date < lesson1_end)
         self.assertTrue(overlaps)
 
     def test_back_to_back_lessons_allowed(self):
-        # Create first lesson
+        #create first lesson
         lesson1 = Lesson.objects.create(
             student=self.student,
             subject=Subject.objects.get(name='Python'),
@@ -45,7 +45,7 @@ class ScheduleConflictTest(TestCase):
             duration=60,
         )
         
-        # Create lesson immediately after
+        #create lesson immediately after
         lesson2 = Lesson.objects.create(
             student=self.student,
             subject=Subject.objects.get(name='Java'),
