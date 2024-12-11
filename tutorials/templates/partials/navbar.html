@@ -1,9 +1,16 @@
 <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
   <div class="container-fluid">
     <!-- Brand Logo -->
-    <a class="navbar-brand" href="{% if user.type == 'admin' %}{% url 'admin_dashboard' %}{% elif user.type == 'tutor' %}{% url 'tutor_dashboard' %}{% else %}{% url 'student_dashboard' %}{% endif %}">
-      <i class="fas fa-tasks"></i> Dashboard
-    </a>
+    <a class="navbar-brand" href="{% if user.is_authenticated %}
+    {% if user.type == 'admin' %}{% url 'admin_dashboard' %}
+    {% elif user.type == 'tutor' %}{% url 'tutor_dashboard' %}
+    {% else %}{% url 'student_dashboard' %}
+    {% endif %}
+    {% else %}
+      {% url 'home' %}
+    {% endif %}">
+    <i class="fas fa-tasks"></i> Dashboard
+</a>
 
     <!-- Toggler for Mobile -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
