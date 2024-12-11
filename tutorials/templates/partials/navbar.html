@@ -9,7 +9,11 @@
     {% else %}
       {% url 'home' %}
     {% endif %}">
-    <i class="fas fa-tasks"></i> Dashboard
+    {% if user.is_authenticated %}
+      <i class="fas fa-tasks"></i> Dashboard
+    {% else %}
+      <i class="fas fa-home"></i> Home
+    {% endif %}
 </a>
 
     <!-- Toggler for Mobile -->
