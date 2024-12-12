@@ -196,12 +196,12 @@ class RequestForm(forms.ModelForm):
             self.add_error('duration', 'The duration must be in 15-minute intervals.')
         if duration < 30 or duration > 240:
             self.add_error('duration', 'The duration must be at least 30 minutes and no more than 240 minutes.')
-        """Ensure preferred_date is within working hours (e.g., 8 AM to 8 PM)"""
+        """Ensure date is within working hours (e.g., 8 AM to 8 PM)"""
         start_time = time(8, 0)  # 8:00 AM
         end_time = time(20, 0)   # 8:00 PM
         lesson_end_time = (date + timedelta(minutes=duration)).time()
         if not (start_time <= date.time() <= end_time and start_time <= lesson_end_time <= end_time):
-            self.add_error('preferred_date', 'The preferred date must be within working hours (8 AM to 8 PM).')
+            self.add_error('date', 'The preferred date must be within working hours (8 AM to 8 PM).')
 
         return cleaned_data
 
@@ -278,16 +278,13 @@ class InvoiceForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        amount = cleaned_data.get('amount')
         student = cleaned_data.get('student')
         lesson = cleaned_data.get('lesson')
 
-        """Ensure the amount is a positive value"""
-        if amount is not None and amount < 0:
-            self.add_error('amount', 'The amount must be greater or equal to 0.')
-        """Ensure that the student matches the lesson student."""
-        if student.type != 'student':
+        """Ensure that the student is a student."""
+        if student not in User.objects.filter(type='student'):
             self.add_error('student', 'The student must be a user of type student.')
+        """Ensure that the student matches the lesson student."""
         if lesson and student != lesson.student:
             self.add_error('student', 'Student must match the lesson student.')
 

@@ -21,35 +21,21 @@ def home(request):
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
 
-    redirect_when_logged_in_url = None
-
     def dispatch(self, *args, **kwargs):
         """Redirect when logged in, or dispatch as normal otherwise."""
         if self.request.user.is_authenticated:
-            return self.handle_already_logged_in(*args, **kwargs)
+            return self.handle_already_logged_in(self.request.user, *args, **kwargs)
         return super().dispatch(*args, **kwargs)
 
     # Route users to corresponding page
-    def handle_already_logged_in(self, *args, **kwargs):
+    def handle_already_logged_in(self, user, *args, **kwargs):
         """Handle when user is already logged in."""
-        user = self.request.user
         if user.type == 'admin':
             return redirect('admin_dashboard')
         elif user.type == 'tutor':
             return redirect('tutor_dashboard')
         else:
             return redirect('student_dashboard')
-
-    def get_redirect_when_logged_in_url(self):
-        """Returns the url to redirect to when not logged in."""
-        if self.redirect_when_logged_in_url is None:
-            raise ImproperlyConfigured(
-                "LoginProhibitedMixin requires either a value for "
-                "'redirect_when_logged_in_url', or an implementation for "
-                "'get_redirect_when_logged_in_url()'."
-            )
-        else:
-            return self.redirect_when_logged_in_url
 
 class PasswordView(LoginRequiredMixin, FormView):
     """Display password change screen and handle password change requests."""
@@ -84,6 +70,11 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
     template_name = "profile/profile.html"
 
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, "Profile updated successfully!")
+        return redirect(self.get_success_url())
+
     def get_form_class(self):
         """Return the form class based on the user type."""
         user = self.request.user
@@ -110,11 +101,12 @@ class SignUpView(LoginProhibitedMixin, FormView):
 
     form_class = SignUpForm
     template_name = "profile/sign_up.html"
-
+    
     def form_valid(self, form):
         self.object = form.save()
         login(self.request, self.object)
-        return super().form_valid(form)
+        return redirect(self.get_success_url())
+
 
     def get_success_url(self):
         """Return the redirect URL based on user type."""
@@ -162,8 +154,6 @@ class LogInView(LoginProhibitedMixin, View):
     
     def get_success_url(self):
         """Return success URL after login."""
-        if self.next:
-            return self.next
         user = self.request.user
         if user.type == 'admin':
             return reverse('admin_dashboard')

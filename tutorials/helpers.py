@@ -35,11 +35,11 @@ def calculate_invoice_amount(lesson):
     if lesson.recurrence == 'None':
         repetitions = 1
     elif lesson.recurrence == 'Daily':
-        repetitions = days_between(lesson.date, datetime.combine(lesson.recurrence_end_date, datetime.min.time(), tzinfo=pytz.utc))
+        repetitions = days_between(lesson.date.date(), lesson.recurrence_end_date)
     elif lesson.recurrence == 'Weekly':
-        repetitions = days_between(lesson.date, datetime.combine(lesson.recurrence_end_date, datetime.min.time(), tzinfo=pytz.utc)) // 7
+        repetitions = days_between(lesson.date.date(), lesson.recurrence_end_date) // 7
     elif lesson.recurrence == 'Monthly':
-        repetitions = days_between(lesson.date, datetime.combine(lesson.recurrence_end_date, datetime.min.time(), tzinfo=pytz.utc)) // 30
+        repetitions = days_between(lesson.date.date(), lesson.recurrence_end_date) // 30
     return lesson.duration * 0.5 * repetitions
 
 def model_is_valid(model):
