@@ -8,21 +8,6 @@ def reverse_with_next(url_name, next_url):
     url += f"?next={next_url}"
     return url
 
-
-def create_user(name = 'charlie', type = 'student'):
-    """Create a student user."""
-    User.objects.create_user(
-        username=f'@{name}',
-        email=f'{name}.johnson@example.org',
-        password='Password123',
-        first_name=name,
-        last_name='Johnson',
-        type=type,
-    )
-    return User.objects.get(username='@{name}')
-
-
-
 class LogInTester:
     """Class support login in tests."""
  

@@ -207,7 +207,7 @@ def create_update_invoice(request, pk=None):
         model_name = request.GET.get('model')
         pk = request.GET.get('pk')
         
-        if model_name and pk:
+        if model_name and pk and model_is_valid(model_name):
             model = apps.get_model('tutorials', model_name)
             obj = get_object_or_404(model, pk=pk)
             
@@ -273,25 +273,27 @@ def list_notifications(request):
 
     return render(request, 'admin/list_notifications.html', context)
 
-# Notification handling
+# Handles notification creation
 @login_required
 @user_type_required(['admin'])
 def create_notification(request):
     model_name = request.GET.get('model')
     pk = request.GET.get('pk')
-    
-    if model_name and pk:
+
+    initial_data = {}
+
+    if model_name and pk and model_is_valid(model_name):
         model = apps.get_model('tutorials', model_name)
         obj = get_object_or_404(model, pk=pk)
-        
+
         if model_name == 'Invoice':
             user = obj.student
             if obj.paid:
                 message = f"Your invoice {obj.pk} for {obj.amount} has been paid"
             elif obj.is_overdue():
-                message = f"You have faild to pay your invoice {obj.pk} for {obj.amount} before {obj.due_date.strftime('%d/%m/%Y')} and it is now overdue, this may affect your ability to book lessons"
+                message = f"You have failed to pay your invoice {obj.pk} for {obj.amount} before {obj.due_date.strftime('%d/%m/%Y')} and it is now overdue, which may affect your ability to book lessons"
             else:
-                message = f"Reminder that you need to pay your invoice {obj.pk} for {obj.amount} before {obj.date.strftime('%d/%m/%Y at %H:%M')}"
+                message = f"Reminder: Please pay your invoice {obj.pk} for {obj.amount} before {obj.due_date.strftime('%d/%m/%Y')}"
         elif model_name == 'Lesson':
             user = obj.student
             if obj.status == 'Approved' and obj.is_assigned:
@@ -308,31 +310,30 @@ def create_notification(request):
         else:
             user = None
             message = ""
-        
+
         initial_data = {'user': user, 'message': message}
-    else:
-        initial_data = {}
 
     if request.method == 'POST':
         form = NotificationForm(request.POST)
         if form.is_valid():
             form.save()
-            if model_is_valid(model_name):
+            messages.success(request, 'Notification created successfully.')
+            if model_name and model_is_valid(model_name):
                 return redirect(f'list_{model_name.lower()}s')
-            else:
-                return redirect('list_notifications')
+            return redirect('list_notifications')
     else:
         form = NotificationForm(initial=initial_data)
-    
+
     return render(request, 'admin/create_notification.html', {'form': form})
 
 # Delete notifications
 @login_required
 @user_type_required(['admin'])
 def delete_object(request, model_name, pk):
-    model = apps.get_model('tutorials', model_name)
-    obj = get_object_or_404(model, pk=pk)
-    if request.method == 'POST':
-        obj.delete()
-        return redirect(f'list_{model_name.lower()}s')
+    if model_is_valid(model_name):
+        model = apps.get_model('tutorials', model_name)
+        obj = get_object_or_404(model, pk=pk)
+        if request.method == 'POST':
+            obj.delete()
+            return redirect(f'list_{model_name.lower()}s')
     return render(request, 'admin/delete_object.html', {'object': obj, 'model_name': model_name.lower()})

@@ -77,5 +77,44 @@
       "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
       "is_active": true
     }
+  },
+  {
+    "model": "tutorials.user",
+    "pk": 7,
+    "fields": {
+      "first_name": "NoActive",
+      "last_name": "Student",
+      "username": "@noactiveS",
+      "email": "noactiveS@example.org",
+      "type": "student",
+      "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
+      "is_active": false
+    }
+  },
+  {
+    "model": "tutorials.user",
+    "pk": 8,
+    "fields": {
+      "first_name": "NoActive",
+      "last_name": "Turor",
+      "username": "@noactiveT",
+      "email": "noactiveT@example.org",
+      "type": "tutor",
+      "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
+      "is_active": false
+    }
+  },
+  {
+    "model": "tutorials.user",
+    "pk": 9,
+    "fields": {
+      "first_name": "NoActive",
+      "last_name": "Admin",
+      "username": "@noactiveA",
+      "email": "noactiveA@example.org",
+      "type": "admin",
+      "password": "pbkdf2_sha256$260000$4BNvFuAWoTT1XVU8D6hCay$KqDCG+bHl8TwYcvA60SGhOMluAheVOnF1PMz0wClilc=",
+      "is_active": false
+    }
   }
 ]
